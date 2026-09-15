@@ -1,52 +1,116 @@
 ---
-import ArrowUpRight from "@lucide/astro/icons/arrow-up-right";
-import Layout from "../layouts/Layout.astro";
-import RobotOutlined from "../assets/images/robot-outlined.png";
+import Layout from '../layouts/Layout.astro';
+import SponsorTierCard from '../components/sponsors/SponsorTierCard.astro';
+import { siteConfig } from '../config/site.config';
+import sponsorsData from '../data/sponsors.json';
+import Icon from '../components/common/Icon.astro';
 ---
 
-<Layout>
-    <main
-        class="flex flex-col items-center pt-8 w-full min-h-screen container mx-auto mb-10 text-center px-3"
-    >
-        <div>
-            <h1 class="text-4xl font-bold">Our Sponsors</h1>
-            {
-                /* <div class="px-4 max-w-2xl flex flex-wrap gap-4 place-items-start justify-center">
-                        {sponsors.map((sponsor) => (
-                            <Sponsor key={sponsor.alt} {...sponsor} />
-                        ))}
-                    </div> */
-            }
+<Layout title={`Sponsors & Support | ${siteConfig.name} #${siteConfig.number}`}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-16">
+    
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
+      <div class="space-y-4 max-w-2xl">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--brand-accent)]/15 text-xs font-bold text-[var(--brand-accent)] border border-[var(--brand-accent)]/30">
+          <Icon name="heart-handshake" size={16} />
+          <span>Sponsorship & Community Partners</span>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 place-items-center">
-            <img src={RobotOutlined.src} alt="Robot" class="max-w-md" />
-            <div class="max-w-xl mt-8">
-                <h2 class="mt-5 text-center text-3xl font-semibold">
-                    Sponsor Us
-                </h2>
-                <p>
-                    We rely on the gracious contributions of our sponsors to
-                    help our team afford the costs of constructing our robots
-                    and attending competitions, and we are very grateful for any
-                    and all donations we receive. Thank you so much for your
-                    consideration!
-                </p>
-                <br />
-                <p>
-                    If you are interested in sponsoring our team, please click
-                    the button below.
-                </p>
-                <div class="mt-5 btn btn-primary">
-                    <a
-                        href="https://docs.google.com/forms/d/e/1FAIpQLSfGc8u_omWk9J0BJhdE-9z5tGH8SfqVsf5kG_ZF3Rlp95ghpg/viewform"
-                        target="_blank"
-                        rel="noreferrer"
-                        class="flex items-center gap-2"
-                    >
-                        Sponsor Us <ArrowUpRight />
-                    </a>
-                </div>
-            </div>
-        </div>
-    </main>
+        <h1 class="text-4xl sm:text-5xl font-extrabold font-display text-white tracking-tight">
+          Support The Future of STEM
+        </h1>
+        <p class="text-base text-slate-300 leading-relaxed">
+          Your tax-deductible contributions directly fund robot parts, travel expenses for regional/world championships, and free STEM bootcamp materials for local middle school students.
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center gap-3">
+        {siteConfig.links.sponsorshipDeckPdf && (
+          <a 
+            href={siteConfig.links.sponsorshipDeckPdf} 
+            target="_blank"
+            class="px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] transition-all shadow-lg shadow-[var(--brand-primary)]/30 flex items-center gap-2"
+          >
+            <Icon name="download" size={16} />
+            <span>Sponsorship Packet (PDF)</span>
+          </a>
+        )}
+        {siteConfig.links.donationUrl && (
+          <a 
+            href={siteConfig.links.donationUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-[var(--brand-accent)] bg-[var(--brand-accent)]/10 hover:bg-[var(--brand-accent)]/20 border border-[var(--brand-accent)]/30 transition-all"
+          >
+            Direct Donation
+          </a>
+        )}
+      </div>
+    </div>
+
+    <!-- Tiers Grid -->
+    <div class="space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold font-display text-white">Sponsorship Tiers & Benefits</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Explore how your organization will be recognized across our robot, team apparel, and media.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {sponsorsData.tiers.map((tier) => (
+          <SponsorTierCard {...tier} />
+        ))}
+      </div>
+    </div>
+
+    <!-- Current Sponsor Wall -->
+    <div class="p-8 sm:p-12 rounded-3xl glass-card border border-white/10 space-y-8">
+      <div class="text-center max-w-xl mx-auto space-y-2">
+        <h3 class="text-2xl font-bold font-display text-white">Our 2025-2026 Sponsors</h3>
+        <p class="text-xs text-slate-400">
+          We are immensely grateful to the companies and foundations that make our competitive journey possible.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
+        {sponsorsData.currentSponsors.map((sponsor) => (
+          <a 
+            href={sponsor.website} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="p-6 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all flex flex-col items-center justify-center min-h-[120px] group text-center"
+          >
+            <span class="text-sm font-bold text-white group-hover:text-[var(--brand-primary-light)] transition-colors">{sponsor.name}</span>
+            <span class="text-[10px] text-[var(--brand-accent)] uppercase font-semibold mt-1.5">{sponsor.tier}</span>
+            <span class="text-[11px] text-slate-400 mt-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span>Visit Website</span>
+              <Icon name="external-link" size={11} />
+            </span>
+          </a>
+        ))}
+      </div>
+
+      <!-- Tax Non-Profit Notice -->
+      <div class="p-4 rounded-xl bg-slate-900/90 border border-white/5 text-center text-xs text-slate-400 max-w-2xl mx-auto">
+        <p>{sponsorsData.taxExemptInfo}</p>
+      </div>
+    </div>
+
+    <!-- Direct Contact Box -->
+    <div id="donate" class="p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="space-y-2">
+        <h3 class="text-2xl font-bold font-display text-white">Interested in Custom In-Kind or Grants?</h3>
+        <p class="text-xs text-slate-300 max-w-xl">
+          We accept in-kind machining services, anodizing, raw stock aluminum/carbon-fiber, 3D printing filament, and electrical equipment.
+        </p>
+      </div>
+      <a 
+        href={`mailto:${siteConfig.contactEmail}?subject=FTC%20Sponsorship%20Inquiry%20-%20Team%20${siteConfig.number}`}
+        class="px-6 py-3.5 rounded-xl text-xs uppercase tracking-wider font-bold text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] transition-all whitespace-nowrap self-start md:self-auto shadow-lg shadow-[var(--brand-primary)]/30"
+      >
+        Contact Sponsorship Lead
+      </a>
+    </div>
+
+  </div>
 </Layout>

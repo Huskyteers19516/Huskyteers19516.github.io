@@ -1,0 +1,344 @@
+---
+import autoData from '../../data/autonomous.json';
+import Icon from '../common/Icon.astro';
+---
+
+<div class="rounded-2xl glass-card border border-white/10 p-6 md:p-8 space-y-6">
+  
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
+    <div>
+      <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--brand-accent)] mb-1">
+        <Icon name="cpu" size={16} />
+        <span>Trajectory Simulation</span>
+      </div>
+      <h2 class="text-2xl font-bold font-display text-white">{autoData.title}</h2>
+      <p class="text-sm text-slate-400 mt-1">{autoData.description}</p>
+    </div>
+
+    <!-- Routine Selector Tabs -->
+    <div class="flex flex-wrap gap-2" id="routine-tabs">
+      {autoData.routines.map((routine, idx) => (
+        <button 
+          data-routine-idx={idx}
+          class={`routine-btn px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            idx === 0 
+              ? 'bg-[var(--brand-primary)] text-white shadow-lg shadow-[var(--brand-primary)]/30' 
+              : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border border-white/10'
+          }`}
+        >
+          {routine.name.split('(')[0]}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <!-- Interactive Visualizer Main Area -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- 2D Field Canvas Container -->
+    <div class="lg:col-span-7 bg-slate-900/90 rounded-2xl border border-white/10 p-4 relative overflow-hidden flex flex-col items-center">
+      
+      <!-- Field Top Bar -->
+      <div class="w-full flex items-center justify-between text-xs text-slate-400 mb-3 px-2">
+        <span class="font-mono flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          12ft x 12ft FTC Competition Field
+        </span>
+        <span id="active-routine-name" class="text-white font-medium">5-Element High Hive Routine</span>
+      </div>
+
+      <!-- SVG Field Canvas -->
+      <div class="relative w-full aspect-square max-w-[460px] bg-slate-950 rounded-xl border border-white/15 overflow-hidden shadow-inner">
+        <!-- FTC Field Grid Lines (6x6 Tiles = 36 Foam Mats) -->
+        <svg viewBox="0 0 100 100" class="w-full h-full" id="field-svg">
+          <defs>
+            <pattern id="field-grid" width="16.66" height="16.66" patternUnits="userSpaceOnUse">
+              <rect width="16.66" height="16.66" fill="#0f172a" stroke="#1e293b" stroke-width="0.5"/>
+            </pattern>
+            <!-- Gradient for trajectory path -->
+            <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="var(--brand-primary-light)" />
+              <stop offset="100%" stop-color="var(--brand-accent)" />
+            </linearGradient>
+          </defs>
+
+          <!-- Field Background & Mat Grid -->
+          <rect width="100" height="100" fill="url(#field-grid)" />
+          
+          <!-- Field Elements (Submersible, Basket & Chamber zones) -->
+          <!-- High Basket / Hive (Top Left Zone) -->
+          <rect x="25" y="15" width="20" height="20" rx="2" fill="rgba(245, 158, 11, 0.2)" stroke="#f59e0b" stroke-width="0.8" stroke-dasharray="2,2"/>
+          <text x="35" y="27" font-size="3.5" fill="#f59e0b" text-anchor="middle" font-weight="bold">HIGH HIVE</text>
+
+          <!-- Submersible / Central Zone -->
+          <rect x="35" y="45" width="30" height="25" rx="3" fill="rgba(14, 165, 233, 0.15)" stroke="#0ea5e9" stroke-width="0.8"/>
+          <text x="50" y="58" font-size="3.5" fill="#38bdf8" text-anchor="middle" font-weight="bold">SUBMERSIBLE</text>
+
+          <!-- Ascent / Parking Bars (Bottom Right) -->
+          <rect x="75" y="75" width="20" height="20" rx="2" fill="rgba(34, 197, 94, 0.15)" stroke="#22c55e" stroke-width="0.8"/>
+          <text x="85" y="87" font-size="3.5" fill="#4ade80" text-anchor="middle" font-weight="bold">ASCENT</text>
+
+          <!-- Trajectory Polyline Path -->
+          <path id="trajectory-path" d="" fill="none" stroke="url(#pathGradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,2"/>
+
+          <!-- Animated Trajectory Marker -->
+          <g id="robot-marker" transform="translate(20, 80)">
+            <circle r="4" fill="var(--brand-primary-light)" stroke="#ffffff" stroke-width="1.2" class="animate-pulse" />
+            <line x1="0" y1="0" x2="0" y2="-5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" />
+          </g>
+
+          <!-- Waypoint Circle Nodes will be injected here via JS -->
+          <g id="waypoints-group"></g>
+        </svg>
+
+        <!-- Tooltip on hover -->
+        <div id="waypoint-tooltip" class="hidden absolute pointer-events-none z-20 px-3 py-1.5 rounded-lg bg-slate-900/95 border border-white/20 text-xs shadow-xl text-white">
+          <div class="font-bold text-[var(--brand-accent)]" id="tooltip-title">Step 1</div>
+          <div class="text-[11px] text-slate-300" id="tooltip-desc">Action Description</div>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="w-full max-w-[460px] flex items-center justify-between gap-4 mt-4 pt-3 border-t border-white/10">
+        <button 
+          id="play-auto-btn"
+          class="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] text-white text-xs font-bold transition-all shadow-md"
+        >
+          <Icon name="play" size={14} class="play-icon" />
+          <Icon name="pause" size={14} class="pause-icon hidden" />
+          <span id="play-btn-text">Simulate Run</span>
+        </button>
+
+        <!-- Timeline Scrubber -->
+        <div class="flex-grow flex items-center gap-2">
+          <span class="text-[11px] font-mono text-slate-400" id="current-sim-time">0.0s</span>
+          <input 
+            type="range" 
+            id="sim-scrubber" 
+            min="0" 
+            max="100" 
+            value="0" 
+            class="w-full accent-[var(--brand-primary-light)] h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+          />
+          <span class="text-[11px] font-mono text-slate-400" id="total-sim-time">28.5s</span>
+        </div>
+
+        <button 
+          id="reset-auto-btn"
+          aria-label="Reset simulation"
+          class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+        >
+          <Icon name="refresh" size={14} />
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Waypoint Sequence & Routine Details -->
+    <div class="lg:col-span-5 space-y-4">
+      
+      <!-- Metrics Card -->
+      <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+        <div>
+          <div class="text-[11px] uppercase tracking-wider font-bold text-slate-400">Est. Auto Score</div>
+          <div class="text-2xl font-extrabold font-display text-[var(--brand-accent)]" id="routine-score">86 Pts</div>
+        </div>
+        <div>
+          <div class="text-[11px] uppercase tracking-wider font-bold text-slate-400">Cycle Time</div>
+          <div class="text-2xl font-extrabold font-display text-white" id="routine-duration">28.5s</div>
+        </div>
+        <div>
+          <div class="text-[11px] uppercase tracking-wider font-bold text-slate-400">Accuracy</div>
+          <div class="text-2xl font-extrabold font-display text-emerald-400">96.8%</div>
+        </div>
+      </div>
+
+      <div class="text-xs text-slate-400 leading-relaxed" id="routine-description">
+        Pre-loaded element score -&gt; cycles 3 field pollen cells into the top hive -&gt; grabs submerged reserve element -&gt; parks in ascent zone.
+      </div>
+
+      <!-- Step-by-Step Waypoint List -->
+      <div class="space-y-2 max-h-[300px] overflow-y-auto pr-1" id="waypoint-list">
+        <!-- Injected via client script -->
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script define:vars={{ routinesData: autoData.routines }}>
+  let currentRoutineIdx = 0;
+  let isPlaying = false;
+  let animProgress = 0;
+  let animInterval = null;
+
+  const trajectoryPath = document.getElementById('trajectory-path');
+  const waypointsGroup = document.getElementById('waypoints-group');
+  const robotMarker = document.getElementById('robot-marker');
+  const waypointList = document.getElementById('waypoint-list');
+  const activeRoutineName = document.getElementById('active-routine-name');
+  const routineScore = document.getElementById('routine-score');
+  const routineDuration = document.getElementById('routine-duration');
+  const routineDesc = document.getElementById('routine-description');
+  const playBtn = document.getElementById('play-auto-btn');
+  const playBtnText = document.getElementById('play-btn-text');
+  const playIcon = playBtn?.querySelector('.play-icon');
+  const pauseIcon = playBtn?.querySelector('.pause-icon');
+  const scrubber = document.getElementById('sim-scrubber');
+  const currentSimTime = document.getElementById('current-sim-time');
+  const totalSimTime = document.getElementById('total-sim-time');
+  const resetBtn = document.getElementById('reset-auto-btn');
+
+  function renderRoutine(idx) {
+    currentRoutineIdx = idx;
+    const routine = routinesData[idx];
+    if (!routine) return;
+
+    if (activeRoutineName) activeRoutineName.textContent = routine.name;
+    if (routineScore) routineScore.textContent = `${routine.estimatedPoints} Pts`;
+    if (routineDuration) routineDuration.textContent = `${routine.durationSeconds}s`;
+    if (totalSimTime) totalSimTime.textContent = `${routine.durationSeconds}s`;
+    if (routineDesc) routineDesc.textContent = routine.description;
+
+    // Build SVG Path
+    let pathD = '';
+    routine.waypoints.forEach((wp, i) => {
+      if (i === 0) {
+        pathD += `M ${wp.x} ${wp.y}`;
+      } else {
+        pathD += ` L ${wp.x} ${wp.y}`;
+      }
+    });
+    if (trajectoryPath) trajectoryPath.setAttribute('d', pathD);
+
+    // Render Waypoint Dots
+    if (waypointsGroup) {
+      waypointsGroup.innerHTML = '';
+      routine.waypoints.forEach((wp, i) => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', String(wp.x));
+        circle.setAttribute('cy', String(wp.y));
+        circle.setAttribute('r', '2.5');
+        circle.setAttribute('fill', i === 0 ? '#22c55e' : (i === routine.waypoints.length - 1 ? '#ef4444' : '#f59e0b'));
+        circle.setAttribute('stroke', '#ffffff');
+        circle.setAttribute('stroke-width', '0.6');
+        circle.setAttribute('class', 'cursor-pointer hover:scale-150 transition-transform');
+        circle.setAttribute('data-step', String(wp.step));
+        waypointsGroup.appendChild(circle);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', String(wp.x + 3));
+        text.setAttribute('y', String(wp.y + 1));
+        text.setAttribute('font-size', '2.5');
+        text.setAttribute('fill', '#94a3b8');
+        text.textContent = String(wp.step);
+        waypointsGroup.appendChild(text);
+      });
+    }
+
+    // Render Step List
+    if (waypointList) {
+      waypointList.innerHTML = '';
+      routine.waypoints.forEach((wp) => {
+        const item = document.createElement('div');
+        item.className = 'p-2.5 rounded-xl bg-slate-900/60 border border-white/5 flex items-center justify-between text-xs hover:border-white/20 transition-all';
+        item.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <span class="w-5 h-5 rounded-full bg-white/10 text-white font-bold flex items-center justify-center text-[10px]">${wp.step}</span>
+            <span class="text-slate-200 font-medium">${wp.action}</span>
+          </div>
+          <span class="font-mono text-[11px] text-[var(--brand-accent)] font-bold">${wp.time}</span>
+        `;
+        waypointList.appendChild(item);
+      });
+    }
+
+    resetSimulation();
+  }
+
+  function updateRobotPosition(percentage) {
+    const routine = routinesData[currentRoutineIdx];
+    if (!routine || routine.waypoints.length < 2) return;
+    
+    const totalWaypoints = routine.waypoints.length;
+    const indexFloat = (percentage / 100) * (totalWaypoints - 1);
+    const currentIndex = Math.floor(indexFloat);
+    const nextIndex = Math.min(currentIndex + 1, totalWaypoints - 1);
+    const fraction = indexFloat - currentIndex;
+
+    const p1 = routine.waypoints[currentIndex];
+    const p2 = routine.waypoints[nextIndex];
+
+    const currentX = p1.x + (p2.x - p1.x) * fraction;
+    const currentY = p1.y + (p2.y - p1.y) * fraction;
+
+    if (robotMarker) {
+      robotMarker.setAttribute('transform', `translate(${currentX}, ${currentY})`);
+    }
+
+    if (currentSimTime) {
+      const elapsed = ((percentage / 100) * routine.durationSeconds).toFixed(1);
+      currentSimTime.textContent = `${elapsed}s`;
+    }
+  }
+
+  function resetSimulation() {
+    isPlaying = false;
+    if (animInterval) clearInterval(animInterval);
+    animProgress = 0;
+    if (scrubber) scrubber.value = '0';
+    if (playBtnText) playBtnText.textContent = 'Simulate Run';
+    playIcon?.classList.remove('hidden');
+    pauseIcon?.classList.add('hidden');
+    updateRobotPosition(0);
+  }
+
+  playBtn?.addEventListener('click', () => {
+    if (isPlaying) {
+      isPlaying = false;
+      if (animInterval) clearInterval(animInterval);
+      if (playBtnText) playBtnText.textContent = 'Resume Run';
+      playIcon?.classList.remove('hidden');
+      pauseIcon?.classList.add('hidden');
+    } else {
+      isPlaying = true;
+      if (playBtnText) playBtnText.textContent = 'Pause';
+      playIcon?.classList.add('hidden');
+      pauseIcon?.classList.remove('hidden');
+
+      animInterval = setInterval(() => {
+        animProgress += 1;
+        if (animProgress > 100) {
+          resetSimulation();
+        } else {
+          if (scrubber) scrubber.value = String(animProgress);
+          updateRobotPosition(animProgress);
+        }
+      }, 50);
+    }
+  });
+
+  resetBtn?.addEventListener('click', resetSimulation);
+
+  scrubber?.addEventListener('input', (e) => {
+    animProgress = Number(e.target.value);
+    updateRobotPosition(animProgress);
+  });
+
+  // Tab switching
+  document.querySelectorAll('.routine-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.routine-btn').forEach(b => {
+        b.className = 'routine-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border border-white/10';
+      });
+      btn.className = 'routine-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-[var(--brand-primary)] text-white shadow-lg shadow-[var(--brand-primary)]/30';
+      const idx = Number(btn.getAttribute('data-routine-idx'));
+      renderRoutine(idx);
+    });
+  });
+
+  // Initial render
+  renderRoutine(0);
+</script>

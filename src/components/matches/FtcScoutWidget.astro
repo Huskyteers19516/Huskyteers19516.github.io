@@ -1,0 +1,143 @@
+---
+import matchData from '../../data/matches.json';
+import { siteConfig } from '../../config/site.config';
+import Icon from '../common/Icon.astro';
+---
+
+<div class="space-y-8">
+  <!-- Live Stats Dashboard Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    
+    <!-- OPR Rating -->
+    <div class="p-6 rounded-2xl glass-card border border-white/10 relative overflow-hidden group">
+      <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <span class="uppercase font-bold tracking-wider">Offensive Power (OPR)</span>
+        <Icon name="sparkles" size={16} class="text-[var(--brand-accent)]" />
+      </div>
+      <div class="text-3xl sm:text-4xl font-extrabold font-display text-[var(--brand-accent)]">
+        {matchData.stats.opr}
+      </div>
+      <div class="text-xs text-slate-400 mt-1">
+        Top 5% offensive efficiency worldwide
+      </div>
+    </div>
+
+    <!-- Match Record -->
+    <div class="p-6 rounded-2xl glass-card border border-white/10 relative overflow-hidden group">
+      <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <span class="uppercase font-bold tracking-wider">Overall Record</span>
+        <Icon name="trophy" size={16} class="text-emerald-400" />
+      </div>
+      <div class="text-3xl sm:text-4xl font-extrabold font-display text-emerald-400">
+        {matchData.overallRecord.wins}-{matchData.overallRecord.losses}-{matchData.overallRecord.ties}
+      </div>
+      <div class="text-xs text-slate-400 mt-1">
+        {matchData.overallRecord.winRate} Win Rate
+      </div>
+    </div>
+
+    <!-- Highest Match Score -->
+    <div class="p-6 rounded-2xl glass-card border border-white/10 relative overflow-hidden group">
+      <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <span class="uppercase font-bold tracking-wider">Record Score</span>
+        <Icon name="cpu" size={16} class="text-cyan-400" />
+      </div>
+      <div class="text-3xl sm:text-4xl font-extrabold font-display text-cyan-400">
+        {matchData.stats.highestMatchScore}
+      </div>
+      <div class="text-xs text-slate-400 mt-1">
+        Cascade Inter-League Match 14
+      </div>
+    </div>
+
+    <!-- Current Standing -->
+    <div class="p-6 rounded-2xl glass-card border border-white/10 relative overflow-hidden group">
+      <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <span class="uppercase font-bold tracking-wider">Championship Seed</span>
+        <Icon name="award" size={16} class="text-purple-400" />
+      </div>
+      <div class="text-xl sm:text-2xl font-extrabold font-display text-white mt-1">
+        WA State Champion
+      </div>
+      <div class="text-xs text-slate-400 mt-1">
+        Houston Worlds Ochoa Seed
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Event History & Awards Table -->
+  <div class="rounded-2xl glass-card border border-white/10 p-6 sm:p-8 space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+      <div>
+        <h3 class="text-2xl font-bold font-display text-white">Season Tournaments & Results</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Comprehensive match breakdown across {siteConfig.seasonGame} {siteConfig.season}.</p>
+      </div>
+
+      {siteConfig.links.ftcScout && (
+        <a 
+          href={siteConfig.links.ftcScout}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all self-start sm:self-auto"
+        >
+          <Icon name="external-link" size={14} />
+          <span>Live FTC Scout Profile</span>
+        </a>
+      )}
+    </div>
+
+    <div class="space-y-4">
+      {matchData.events.map((event) => (
+        <div class="p-5 rounded-xl bg-slate-900/80 border border-white/5 hover:border-white/15 transition-all space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-base font-bold text-white">{event.name}</span>
+                <span class={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${
+                  event.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                }`}>
+                  {event.status}
+                </span>
+              </div>
+              <div class="text-xs text-slate-400 flex items-center gap-2 mt-1">
+                <Icon name="calendar" size={12} />
+                <span>{event.date}</span>
+                <span>•</span>
+                <Icon name="map-pin" size={12} />
+                <span>{event.venue}</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 self-start sm:self-auto">
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 uppercase font-bold block">Standing</span>
+                <span class="text-xs font-bold text-[var(--brand-primary-light)] font-mono">{event.rank}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 uppercase font-bold block">Record</span>
+                <span class="text-xs font-bold text-white font-mono">{event.record}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Awards Pill List -->
+          {event.awards && event.awards.length > 0 && (
+            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-white/5">
+              <span class="text-[11px] font-bold text-slate-400 flex items-center gap-1">
+                <Icon name="award" size={14} class="text-[var(--brand-accent)]" />
+                <span>Awards:</span>
+              </span>
+              {event.awards.map((award) => (
+                <span class="px-2.5 py-1 rounded-lg text-xs font-medium bg-[var(--brand-accent)]/10 text-[var(--brand-accent)] border border-[var(--brand-accent)]/25">
+                  🏆 {award}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SubsystemViewer from '../components/robot/SubsystemViewer.astro';
+import AutonomousVisualizer from '../components/robot/AutonomousVisualizer.astro';
+import { siteConfig } from '../config/site.config';
+import robotData from '../data/robot.json';
+import Icon from '../components/common/Icon.astro';
+---
+
+<Layout title={`The Robot | ${siteConfig.name} #${siteConfig.number}`}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-16">
+    
+    <!-- Page Header -->
+    <div class="space-y-4 max-w-3xl">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--brand-primary)]/20 text-xs font-bold text-[var(--brand-primary-light)] border border-[var(--brand-primary)]/30">
+        <Icon name="bot" size={16} />
+        <span>Engineering Design & Control</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-extrabold font-display text-white tracking-tight">
+        Engineering Architecture
+      </h1>
+      <p class="text-base text-slate-300 leading-relaxed">
+        Explore the custom mechanics, rapid iteration cycles, and Pedro Pathing autonomous routines powering {robotData.name} for the {siteConfig.seasonGame} season.
+      </p>
+    </div>
+
+    <!-- Subsystems Interactive Explorer -->
+    <SubsystemViewer />
+
+    <!-- Autonomous Trajectory Visualizer -->
+    {siteConfig.features.autonomousVisualizer && (
+      <div class="pt-6">
+        <AutonomousVisualizer />
+      </div>
+    )}
+
+  </div>
+</Layout>

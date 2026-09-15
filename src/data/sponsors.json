@@ -1,0 +1,57 @@
+{
+  "packetDownloadUrl": "/docs/sponsorship-packet-19516.pdf",
+  "donationUrl": "https://paypal.me/huskyteers19516",
+  "taxExemptInfo": "501(c)(3) Non-Profit organization registered under Husky STEM Foundation. EIN: 91-XXXXXXX.",
+  "tiers": [
+    {
+      "name": "Platinum Diamond",
+      "amount": "$2,500+",
+      "accent": "#f59e0b",
+      "benefits": [
+        "Extra-large primary logo on competition robot chassis",
+        "Top-level logo on team competition shirts & pit banner",
+        "Featured sponsor shoutout during match introductions & social media",
+        "Permanent banner with direct link on website header & sponsor page",
+        "Personalized robot demo session at your company office"
+      ]
+    },
+    {
+      "name": "Gold Partner",
+      "amount": "$1,000+",
+      "accent": "#eab308",
+      "benefits": [
+        "Prominent logo on competition robot",
+        "Logo on team shirts & pit display banners",
+        "Logo and link on website sponsor wall",
+        "Social media appreciation post & season recap newsletter"
+      ]
+    },
+    {
+      "name": "Silver Supporter",
+      "amount": "$500+",
+      "accent": "#94a3b8",
+      "benefits": [
+        "Medium logo on team shirts & pit banner",
+        "Logo and link on website sponsor wall",
+        "Quarterly season update newsletters"
+      ]
+    },
+    {
+      "name": "Bronze Friend",
+      "amount": "$250+",
+      "accent": "#cd7f32",
+      "benefits": [
+        "Name/Logo on website sponsor wall",
+        "Framed team photo & certificate of appreciation"
+      ]
+    }
+  ],
+  "currentSponsors": [
+    { "name": "Northwest Tech Innovations", "tier": "Platinum Diamond", "logo": "/images/sponsors/sponsor1.svg", "website": "https://example.com" },
+    { "name": "Apex Precision CNC & Machining", "tier": "Platinum Diamond", "logo": "/images/sponsors/sponsor2.svg", "website": "https://example.com" },
+    { "name": "Cascade Aerospace & Robotics", "tier": "Gold Partner", "logo": "/images/sponsors/sponsor3.svg", "website": "https://example.com" },
+    { "name": "Emerald City Electronics", "tier": "Gold Partner", "logo": "/images/sponsors/sponsor4.svg", "website": "https://example.com" },
+    { "name": "goBILDA FTC Support Grant", "tier": "Silver Supporter", "logo": "/images/sponsors/sponsor5.svg", "website": "https://gobilda.com" },
+    { "name": "Husky Booster Club", "tier": "Silver Supporter", "logo": "/images/sponsors/sponsor6.svg", "website": "https://example.com" }
+  ]
+}

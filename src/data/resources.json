@@ -1,0 +1,55 @@
+{
+  "cadFiles": [
+    {
+      "title": "Low-Profile Pinpoint Odometry Mount (.STEP)",
+      "description": "Ultra-compact 3D-printable mount designed for goBILDA pinpoint pods with spring-loaded tensioning.",
+      "downloads": 480,
+      "format": ".STEP / .STL",
+      "downloadUrl": "#"
+    },
+    {
+      "title": "Dual-Durometer Compliant Intake Roller Mold (.STEP)",
+      "description": "Two-part silicone casting mold for high-traction 35A/50A BIOBUZZ sample intake wheels.",
+      "downloads": 320,
+      "format": ".STEP / Fusion 360",
+      "downloadUrl": "#"
+    },
+    {
+      "title": "Misumi SAR220 3-Stage Linear Slide Bracket Kit",
+      "description": "Lightweight pocketed 6061 aluminum brackets for continuous Kevlar string rigging.",
+      "downloads": 610,
+      "format": ".STEP / .DXF",
+      "downloadUrl": "#"
+    }
+  ],
+  "codeRepositories": [
+    {
+      "title": "Pedro Pathing BIOBUZZ Autonomous Templates",
+      "description": "Our open-source asynchronous state machine architecture and Bézier trajectory generators in Java.",
+      "language": "Java / FTC SDK 10.x",
+      "stars": 42,
+      "githubUrl": "https://github.com/Huskyteers19516"
+    },
+    {
+      "title": "HuskyVision: OpenCV Color Segmentation Pipeline",
+      "description": "Fast thresholding and bounding-box detection tuned for low-latency Limelight / Control Hub USB cameras.",
+      "language": "Java / OpenCV",
+      "stars": 28,
+      "githubUrl": "https://github.com/Huskyteers19516"
+    }
+  ],
+  "whitepapers": [
+    {
+      "title": "Engineering Whitepaper: Continuous Rigging vs Cascade Rigging for High-Speed Elevators",
+      "pages": "12 pages",
+      "year": "2025",
+      "downloadUrl": "#"
+    },
+    {
+      "title": "Field Scouting Strategy Guide & Data Analysis with Python",
+      "pages": "8 pages",
+      "year": "2026",
+      "downloadUrl": "#"
+    }
+  ]
+}

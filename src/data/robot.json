@@ -1,0 +1,74 @@
+{
+  "name": "NectarViper V3",
+  "season": "BIOBUZZ 2025-2026",
+  "drivetrain": "Mecanum with Dual Dead-Wheel Odometry + Pinpoint IMU",
+  "dimensions": "17.5\" x 17.5\" x 16.8\"",
+  "weight": "28.4 lbs",
+  "cycleTime": "4.2s per Pollen Cell deposit",
+  "cadLink": "https://cad.onshape.com",
+  "githubLink": "https://github.com/Huskyteers19516/BIOBUZZ-Robot-Code",
+  "description": "NectarViper V3 is a high-speed, lightweight cycler optimized for the 2025-2026 BIOBUZZ game. Designed with a custom carbon-fiber chassis, high-intake compliant rollers, an active indexer, and an ultra-rigid 3-stage continuous rigging linear slide system.",
+  "subsystems": [
+    {
+      "id": "drivebase",
+      "name": "Chassis & Drivetrain",
+      "category": "Mechanical",
+      "specs": [
+        "4x goBILDA 5203 Yellow Jacket (312 RPM, 19.2:1)",
+        "96mm High-Traction Mecanum Wheels",
+        "Carbon fiber bellypan & CNC milled 6061-T6 aluminum side plates",
+        "GOBILDA Pinpoint Odometry Computer + 2x Optical Encoders"
+      ],
+      "highlights": "Achieves 1.85 m/s top speed with under 0.5° heading drift across 30 seconds of autonomous movement.",
+      "iterationNotes": "V1 used standard channel plates; V2 reduced weight by 3.2 lbs with pocketed plates; V3 added enclosed wire channels."
+    },
+    {
+      "id": "intake",
+      "name": "Bio-Roller Compliant Intake",
+      "category": "Intake & Transfer",
+      "specs": [
+        "1x goBILDA 5203 (1170 RPM) + 1x Axon Mini Servo for wrist articulation",
+        "Dual-durometer 35A/50A custom 3D printed silicone compliant flaps",
+        "Color-sensor thresholding for instant pollen element sorting"
+      ],
+      "highlights": "Ingests elements at any orientation within a 120° front capture funnel in under 0.4 seconds.",
+      "iterationNotes": "V1 suffered from element jamming; V2 introduced a floating passive ramp; V3 added high-speed reverse purge."
+    },
+    {
+      "id": "lift",
+      "name": "Continuous Rigging High-Speed Lift",
+      "category": "Scoring & Motion",
+      "specs": [
+        "2x goBILDA 5203 (435 RPM) dual-motor driven drum",
+        "3-Stage custom Misumi SAR220 linear rail assembly with Kevlar cord",
+        "Custom magnetic limit switch for zero-backlash home calibration"
+      ],
+      "highlights": "Reaches full extension (38 inches) in 0.65 seconds with closed-loop PIDF velocity profiling.",
+      "iterationNotes": "V1 had string fraying issues; V2 switched to 150lb braided Kevlar line with dynamic tensioning spring."
+    },
+    {
+      "id": "outtake",
+      "name": "Dual-Axis Virtual 4-Bar Claw",
+      "category": "Scoring & Motion",
+      "specs": [
+        "2x Gobilda Torque Servos with 270° active positioning",
+        "Custom TPU compliant gripper pads for multi-angle deposit",
+        "Fast-release quick dump toggle for basket scoring"
+      ],
+      "highlights": "Allows 180° wrist flip for both high basket scoring and low chamber specimen clip scoring.",
+      "iterationNotes": "V1 was rigid; V2 added compliant TPU pads to absorb driver alignment error."
+    },
+    {
+      "id": "software",
+      "name": "Autonomous Vision & Pedro Pathing",
+      "category": "Software & Controls",
+      "specs": [
+        "Pedro Pathing Bezier trajectory generation with live curvature-limiting",
+        "Limelight 3A / OpenCV color segmentation for sample detection",
+        "State machine architecture with asynchronous non-blocking actions"
+      ],
+      "highlights": "Consistent 5-element autonomous routine with sub-inch positional repeatability.",
+      "iterationNotes": "Migrated from standard Road Runner to Pedro Pathing for tighter curve following and 15% faster auto times."
+    }
+  ]
+}
