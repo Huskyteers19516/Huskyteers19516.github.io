@@ -202,7 +202,9 @@ src/
 1. Push your code to a GitHub repository.
 2. In GitHub repository settings, go to **Settings $\rightarrow$ Pages**.
 3. Under **Build and deployment $\rightarrow$ Source**, select **GitHub Actions**.
-4. Astro automatically provides a standard GitHub Actions workflow for zero-config deployment.
+4. The workflow in `.github/workflows/astro.yml` builds `main` and publishes it to Pages on every push.
+
+**Pull request previews.** Every pull request into `main` gets its own live preview at `https://<owner>.github.io/pr-preview/pr-<number>/`, built by `.github/workflows/pr-preview.yml`. A bot comment on the pull request links to it, it refreshes on every push, and it is removed when the pull request is closed. Both workflows share the `gh-pages` branch: its root is the production build and `pr-preview/` holds the previews, so do not edit that branch by hand. Internal links must go through `withBase()` from `src/utils/url.ts` so they resolve under the preview sub-path.
 
 ### Option 2: Vercel / Cloudflare Pages
 1. Connect your GitHub repository to [Vercel](https://vercel.com) or [Cloudflare Pages](https://pages.cloudflare.com).

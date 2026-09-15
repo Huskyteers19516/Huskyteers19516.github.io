@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../utils/url';
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/common/Hero.astro';
 import SubsystemViewer from '../components/robot/SubsystemViewer.astro';
@@ -29,7 +30,7 @@ import Icon from '../components/common/Icon.astro';
               Meet NectarViper V3
             </h2>
           </div>
-          <a href="/robot" class="text-xs font-bold text-[var(--brand-primary-light)] hover:underline flex items-center gap-1 self-start sm:self-auto">
+          <a href={withBase('/robot')} class="text-xs font-bold text-[var(--brand-primary-light)] hover:underline flex items-center gap-1 self-start sm:self-auto">
             <span>Full Technical Specifications</span>
             <Icon name="chevron-right" size={14} />
           </a>
@@ -58,7 +59,7 @@ import Icon from '../components/common/Icon.astro';
               Match Hub & Standings
             </h2>
           </div>
-          <a href="/matches" class="text-xs font-bold text-[var(--brand-accent)] hover:underline flex items-center gap-1 self-start sm:self-auto">
+          <a href={withBase('/matches')} class="text-xs font-bold text-[var(--brand-accent)] hover:underline flex items-center gap-1 self-start sm:self-auto">
             <span>View All Tournaments & Awards</span>
             <Icon name="chevron-right" size={14} />
           </a>
@@ -81,7 +82,7 @@ import Icon from '../components/common/Icon.astro';
               Community Outreach & Impact
             </h2>
           </div>
-          <a href="/outreach" class="text-xs font-bold text-cyan-400 hover:underline flex items-center gap-1 self-start sm:self-auto">
+          <a href={withBase('/outreach')} class="text-xs font-bold text-cyan-400 hover:underline flex items-center gap-1 self-start sm:self-auto">
             <span>Explore All Workshops</span>
             <Icon name="chevron-right" size={14} />
           </a>
@@ -115,14 +116,14 @@ import Icon from '../components/common/Icon.astro';
 
         <div class="pt-4 flex flex-wrap items-center justify-center gap-4">
           <a 
-            href="/sponsors" 
+            href={withBase('/sponsors')} 
             class="px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] transition-all shadow-md"
           >
             Become a Sponsor
           </a>
           {siteConfig.links.sponsorshipDeckPdf && (
             <a 
-              href={siteConfig.links.sponsorshipDeckPdf} 
+              href={withBase(siteConfig.links.sponsorshipDeckPdf)} 
               target="_blank"
               class="px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center gap-1.5"
             >

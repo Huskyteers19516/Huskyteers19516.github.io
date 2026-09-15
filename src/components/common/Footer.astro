@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../../utils/url';
 import { siteConfig } from '../../config/site.config';
 import Icon from './Icon.astro';
 
@@ -45,12 +46,12 @@ const currentYear = new Date().getFullYear();
       <div>
         <h3 class="text-xs uppercase font-bold tracking-wider text-slate-300 mb-4">Navigation</h3>
         <ul class="space-y-2 text-sm">
-          <li><a href="/robot" class="hover:text-white transition-colors">The Robot & CAD</a></li>
-          <li><a href="/outreach" class="hover:text-white transition-colors">Community Outreach</a></li>
-          <li><a href="/matches" class="hover:text-white transition-colors">Match Results & OPR</a></li>
-          <li><a href="/team" class="hover:text-white transition-colors">Team Members</a></li>
-          <li><a href="/sponsors" class="hover:text-white transition-colors">Sponsorship Tiers</a></li>
-          <li><a href="/resources" class="hover:text-white transition-colors">Open-Source Files</a></li>
+          <li><a href={withBase('/robot')} class="hover:text-white transition-colors">The Robot & CAD</a></li>
+          <li><a href={withBase('/outreach')} class="hover:text-white transition-colors">Community Outreach</a></li>
+          <li><a href={withBase('/matches')} class="hover:text-white transition-colors">Match Results & OPR</a></li>
+          <li><a href={withBase('/team')} class="hover:text-white transition-colors">Team Members</a></li>
+          <li><a href={withBase('/sponsors')} class="hover:text-white transition-colors">Sponsorship Tiers</a></li>
+          <li><a href={withBase('/resources')} class="hover:text-white transition-colors">Open-Source Files</a></li>
         </ul>
       </div>
 

@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../../utils/url';
 import Icon from '../common/Icon.astro';
 
 interface Props {
@@ -38,7 +39,7 @@ const { name, amount, accent, benefits } = Astro.props;
 
   <div class="pt-6 mt-6 border-t border-white/10">
     <a 
-      href="/sponsors#donate"
+      href={withBase('/sponsors#donate')}
       class="w-full text-center py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold text-white bg-white/5 hover:bg-[var(--brand-primary)] border border-white/10 hover:border-transparent transition-all block"
     >
       Partner With Us

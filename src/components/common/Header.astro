@@ -1,8 +1,9 @@
 ---
 import { siteConfig, navItems } from '../../config/site.config';
 import Icon from './Icon.astro';
+import { withBase, stripBase } from '../../utils/url';
 
-const currentPath = Astro.url.pathname;
+const currentPath = stripBase(Astro.url.pathname);
 ---
 
 <header class="sticky top-0 z-40 w-full border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
@@ -10,7 +11,7 @@ const currentPath = Astro.url.pathname;
     <div class="flex items-center justify-between h-20">
       
       <!-- Team Logo & Identity -->
-      <a href="/" class="flex items-center gap-3.5 group">
+      <a href={withBase('/')} class="flex items-center gap-3.5 group">
         <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[var(--brand-primary)] to-[var(--brand-primary-light)] flex items-center justify-center font-bold text-white shadow-lg shadow-[var(--brand-primary)]/25 group-hover:scale-105 transition-transform duration-300">
           <span class="font-mono text-sm tracking-tighter">#{siteConfig.number}</span>
         </div>
@@ -35,7 +36,7 @@ const currentPath = Astro.url.pathname;
           const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
           return (
             <a 
-              href={item.href}
+              href={withBase(item.href)}
               class={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive 
                   ? 'text-white bg-white/10 font-semibold border border-white/15' 
@@ -52,7 +53,7 @@ const currentPath = Astro.url.pathname;
       <div class="hidden sm:flex items-center gap-3">
         {siteConfig.links.portfolioPdf && (
           <a 
-            href={siteConfig.links.portfolioPdf} 
+            href={withBase(siteConfig.links.portfolioPdf)} 
             target="_blank"
             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs uppercase tracking-wider font-bold text-white bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-primary-light)] hover:opacity-95 shadow-md shadow-[var(--brand-primary)]/30 hover:scale-105 transition-all duration-200"
           >
@@ -94,7 +95,7 @@ const currentPath = Astro.url.pathname;
       const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
       return (
         <a 
-          href={item.href}
+          href={withBase(item.href)}
           class={`block px-4 py-2.5 rounded-lg text-base font-medium ${
             isActive 
               ? 'text-white bg-[var(--brand-primary)]/20 font-semibold border-l-4 border-[var(--brand-primary)]' 
@@ -108,7 +109,7 @@ const currentPath = Astro.url.pathname;
     <div class="pt-4 flex flex-col gap-2">
       {siteConfig.links.portfolioPdf && (
         <a 
-          href={siteConfig.links.portfolioPdf} 
+          href={withBase(siteConfig.links.portfolioPdf)} 
           target="_blank"
           class="w-full text-center py-2.5 rounded-lg text-sm font-bold text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] transition-colors"
         >

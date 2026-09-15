@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../utils/url';
 import Layout from '../layouts/Layout.astro';
 import SponsorTierCard from '../components/sponsors/SponsorTierCard.astro';
 import { siteConfig } from '../config/site.config';
@@ -28,7 +29,7 @@ import Icon from '../components/common/Icon.astro';
       <div class="flex flex-wrap items-center gap-3">
         {siteConfig.links.sponsorshipDeckPdf && (
           <a 
-            href={siteConfig.links.sponsorshipDeckPdf} 
+            href={withBase(siteConfig.links.sponsorshipDeckPdf)} 
             target="_blank"
             class="px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] transition-all shadow-lg shadow-[var(--brand-primary)]/30 flex items-center gap-2"
           >
