@@ -1,0 +1,52 @@
+{
+  "summary": {
+    "totalHours": "420+ Hours",
+    "studentsReached": "650+ Students",
+    "fllTeamsMentored": "4 Teams",
+    "workshopsHosted": "14 Workshops"
+  },
+  "events": [
+    {
+      "id": "stem-bootcamp-2025",
+      "title": "Middle School STEM Robotics Summer Bootcamp",
+      "date": "July 2025",
+      "category": "Camps & Workshops",
+      "location": "North Seattle Community Center",
+      "impact": "45 middle school students taught Onshape CAD, Java basics, and drivetrain kinematics.",
+      "description": "A 5-day hands-on workshop giving underrepresented students their first robotics experience. Students built custom 2-wheel drive bots and competed in a friendly mini-game."
+    },
+    {
+      "id": "fll-mentorship-fall",
+      "title": "Mentorship: FLL Team #48911 'The RoboPups'",
+      "date": "September - November 2025",
+      "category": "Mentorship",
+      "location": "Cedar River Elementary School",
+      "impact": "Mentored 8 elementary schoolers 2x per week; team advanced to State Championships.",
+      "description": "Our software and mechanical leads guided rookie students through LEGO Spike Prime block coding, sensory alignment, and their Innovation Project presentation."
+    },
+    {
+      "id": "girls-in-stem-expo",
+      "title": "Women in STEM Interactive Demonstration",
+      "date": "October 2025",
+      "category": "Diversity & Inclusion",
+      "location": "Pacific Science Pavilion",
+      "impact": "200+ attendees engaged with robot driver controls and interactive mechanism demos.",
+      "description": "Hosted a booth showcasing female leadership in engineering, autonomous vision pipelines, and CAD modeling tutorials."
+    },
+    {
+      "id": "library-cad-series",
+      "title": "Public Library 3D CAD & 3D Printing Series",
+      "date": "January 2026",
+      "category": "Community Demos",
+      "location": "Seattle Central Public Library",
+      "impact": "32 local teenagers earned Onshape CAD beginner certification.",
+      "description": "A free 4-part evening workshop teaching 3D modeling, parametric design, and slicing for 3D printers."
+    }
+  ],
+  "mapLocations": [
+    { "name": "North Seattle Community Center", "type": "Workshop", "lat": "47.70", "lng": "-122.33", "reach": "45 Students" },
+    { "name": "Cedar River Elementary", "type": "FLL Mentoring", "lat": "47.48", "lng": "-122.18", "reach": "8 Students" },
+    { "name": "Pacific Science Pavilion", "type": "Community Demo", "lat": "47.62", "lng": "-122.35", "reach": "200+ Attendees" },
+    { "name": "Seattle Central Library", "type": "CAD Series", "lat": "47.60", "lng": "-122.33", "reach": "32 Students" }
+  ]
+}

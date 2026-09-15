@@ -1,0 +1,78 @@
+---
+import Icon from './Icon.astro';
+---
+
+<!-- Floating Theme Customizer Preview (Demonstrating Instant White-label Re-skinning) -->
+<div id="theme-panel" class="fixed bottom-6 right-6 z-50">
+  <button 
+    id="theme-toggle-btn"
+    aria-label="Customize Branding & Theme"
+    class="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-slate-900 border border-white/20 text-white shadow-xl hover:scale-105 transition-all text-xs font-semibold backdrop-blur-md glow-primary"
+  >
+    <Icon name="palette" size={16} class="text-[var(--brand-primary-light)]" />
+    <span>Branding Palette</span>
+  </button>
+
+  <div 
+    id="theme-menu" 
+    class="hidden absolute bottom-14 right-0 w-72 p-4 rounded-2xl glass-card bg-slate-900/95 border border-white/15 shadow-2xl space-y-4"
+  >
+    <div class="flex items-center justify-between pb-2 border-b border-white/10">
+      <div class="flex items-center gap-2">
+        <Icon name="palette" size={16} />
+        <span class="text-xs font-bold uppercase tracking-wider text-white">Live Re-Skinning</span>
+      </div>
+      <span class="text-[10px] text-slate-400">site.config.ts</span>
+    </div>
+
+    <div>
+      <label class="block text-[11px] font-medium text-slate-300 mb-2">Select Team Preset:</label>
+      <div class="grid grid-cols-2 gap-2">
+        <button data-preset="husky" class="theme-preset-btn text-left p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-emerald-600/40 text-xs font-medium text-emerald-400">
+          🌿 19516 Huskyteers
+        </button>
+        <button data-preset="cyber" class="theme-preset-btn text-left p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-cyan-500/40 text-xs font-medium text-cyan-400">
+          ⚡ Cyber Blue
+        </button>
+        <button data-preset="crimson" class="theme-preset-btn text-left p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-red-500/40 text-xs font-medium text-red-400">
+          🔥 Crimson Blaze
+        </button>
+        <button data-preset="solar" class="theme-preset-btn text-left p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-amber-500/40 text-xs font-medium text-amber-400">
+          ☀️ Solar Gold
+        </button>
+      </div>
+    </div>
+
+    <div class="pt-2 border-t border-white/10 text-[10px] text-slate-400 leading-relaxed">
+      💡 Change <code class="text-[var(--brand-primary-light)] font-mono">theme.primaryColor</code> in <code class="text-slate-300">src/config/site.config.ts</code> to permanently customize colors for any FTC team.
+    </div>
+  </div>
+</div>
+
+<script>
+  const toggleBtn = document.getElementById('theme-toggle-btn');
+  const themeMenu = document.getElementById('theme-menu');
+
+  toggleBtn?.addEventListener('click', () => {
+    themeMenu?.classList.toggle('hidden');
+  });
+
+  const presets: Record<string, { primary: string; light: string; accent: string }> = {
+    husky: { primary: '#126735', light: '#1ea354', accent: '#f59e0b' },
+    cyber: { primary: '#0284c7', light: '#38bdf8', accent: '#f43f5e' },
+    crimson: { primary: '#991b1b', light: '#ef4444', accent: '#fbbf24' },
+    solar: { primary: '#d97706', light: '#f59e0b', accent: '#10b981' }
+  };
+
+  document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const presetKey = btn.getAttribute('data-preset');
+      if (presetKey && presets[presetKey]) {
+        const theme = presets[presetKey];
+        document.documentElement.style.setProperty('--brand-primary', theme.primary);
+        document.documentElement.style.setProperty('--brand-primary-light', theme.light);
+        document.documentElement.style.setProperty('--brand-accent', theme.accent);
+      }
+    });
+  });
+</script>

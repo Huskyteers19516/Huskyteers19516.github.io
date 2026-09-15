@@ -1,0 +1,135 @@
+---
+import { siteConfig, navItems } from '../../config/site.config';
+import Icon from './Icon.astro';
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="sticky top-0 z-40 w-full border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-20">
+      
+      <!-- Team Logo & Identity -->
+      <a href="/" class="flex items-center gap-3.5 group">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[var(--brand-primary)] to-[var(--brand-primary-light)] flex items-center justify-center font-bold text-white shadow-lg shadow-[var(--brand-primary)]/25 group-hover:scale-105 transition-transform duration-300">
+          <span class="font-mono text-sm tracking-tighter">#{siteConfig.number}</span>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <span class="font-display font-bold text-xl tracking-tight text-white group-hover:text-[var(--brand-primary-light)] transition-colors">
+              {siteConfig.name}
+            </span>
+            <span class="hidden sm:inline-block text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-[var(--brand-primary)]/20 text-[var(--brand-primary-light)] border border-[var(--brand-primary)]/30">
+              {siteConfig.seasonGame}
+            </span>
+          </div>
+          <span class="text-xs text-slate-400 font-medium hidden md:inline-block">
+            FIRST Tech Challenge • {siteConfig.location}
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden lg:flex items-center gap-1">
+        {navItems.map((item) => {
+          const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
+          return (
+            <a 
+              href={item.href}
+              class={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                isActive 
+                  ? 'text-white bg-white/10 font-semibold border border-white/15' 
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              {item.label}
+            </a>
+          );
+        })}
+      </nav>
+
+      <!-- Action Buttons & Portfolio Link -->
+      <div class="hidden sm:flex items-center gap-3">
+        {siteConfig.links.portfolioPdf && (
+          <a 
+            href={siteConfig.links.portfolioPdf} 
+            target="_blank"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs uppercase tracking-wider font-bold text-white bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-primary-light)] hover:opacity-95 shadow-md shadow-[var(--brand-primary)]/30 hover:scale-105 transition-all duration-200"
+          >
+            <Icon name="file-text" size={14} />
+            <span>Portfolio</span>
+          </a>
+        )}
+        {siteConfig.links.github && (
+          <a 
+            href={siteConfig.links.github} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            aria-label="GitHub Repository"
+            class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+          >
+            <Icon name="github" size={20} />
+          </a>
+        )}
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <div class="flex lg:hidden items-center gap-2">
+        <button 
+          id="mobile-menu-btn" 
+          aria-label="Toggle navigation menu"
+          class="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5"
+        >
+          <Icon name="menu" size={24} class="menu-open-icon" />
+          <Icon name="x" size={24} class="menu-close-icon hidden" />
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Menu -->
+  <div id="mobile-menu" class="hidden lg:hidden border-b border-white/10 bg-slate-950/95 px-4 pt-2 pb-6 space-y-1">
+    {navItems.map((item) => {
+      const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
+      return (
+        <a 
+          href={item.href}
+          class={`block px-4 py-2.5 rounded-lg text-base font-medium ${
+            isActive 
+              ? 'text-white bg-[var(--brand-primary)]/20 font-semibold border-l-4 border-[var(--brand-primary)]' 
+              : 'text-slate-300 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          {item.label}
+        </a>
+      );
+    })}
+    <div class="pt-4 flex flex-col gap-2">
+      {siteConfig.links.portfolioPdf && (
+        <a 
+          href={siteConfig.links.portfolioPdf} 
+          target="_blank"
+          class="w-full text-center py-2.5 rounded-lg text-sm font-bold text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] transition-colors"
+        >
+          📄 View Engineering Portfolio (PDF)
+        </a>
+      )}
+    </div>
+  </div>
+</header>
+
+<script>
+  const menuBtn = document.getElementById('mobile-menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  const openIcon = document.querySelector('.menu-open-icon');
+  const closeIcon = document.querySelector('.menu-close-icon');
+
+  if (menuBtn && menu) {
+    menuBtn.addEventListener('click', () => {
+      menu.classList.toggle('hidden');
+      openIcon?.classList.toggle('hidden');
+      closeIcon?.classList.toggle('hidden');
+    });
+  }
+</script>

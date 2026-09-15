@@ -1,0 +1,47 @@
+---
+import Icon from '../common/Icon.astro';
+
+interface Props {
+  name: string;
+  amount: string;
+  accent: string;
+  benefits: string[];
+}
+
+const { name, amount, accent, benefits } = Astro.props;
+---
+
+<div class="rounded-2xl glass-card border border-white/10 p-6 sm:p-8 flex flex-col justify-between hover:border-white/25 transition-all relative overflow-hidden group">
+  <!-- Accent Top Border Glow -->
+  <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[var(--brand-accent)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+  <div class="space-y-6">
+    <div class="border-b border-white/10 pb-4">
+      <h4 class="text-xl font-bold font-display text-white">{name}</h4>
+      <div class="text-3xl font-extrabold font-display text-[var(--brand-accent)] mt-1">{amount}</div>
+      <span class="text-[11px] text-slate-400">Annual Contribution</span>
+    </div>
+
+    <!-- Benefits List -->
+    <div class="space-y-3">
+      <span class="text-xs uppercase font-bold tracking-wider text-slate-400 block">Sponsor Recognition:</span>
+      <ul class="space-y-2.5">
+        {benefits.map((benefit) => (
+          <li class="flex items-start gap-2.5 text-xs text-slate-200">
+            <span class="text-emerald-400 font-bold mt-0.5">✓</span>
+            <span>{benefit}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <div class="pt-6 mt-6 border-t border-white/10">
+    <a 
+      href="/sponsors#donate"
+      class="w-full text-center py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold text-white bg-white/5 hover:bg-[var(--brand-primary)] border border-white/10 hover:border-transparent transition-all block"
+    >
+      Partner With Us
+    </a>
+  </div>
+</div>

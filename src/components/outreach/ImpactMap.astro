@@ -1,0 +1,122 @@
+---
+import outreachData from '../../data/outreach.json';
+import Icon from '../common/Icon.astro';
+---
+
+<div class="space-y-8">
+  <!-- Impact Numbers Banner -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="p-6 rounded-2xl glass-card border border-white/10 text-center">
+      <div class="text-3xl sm:text-4xl font-extrabold font-display text-[var(--brand-primary-light)]">
+        {outreachData.summary.totalHours}
+      </div>
+      <div class="text-xs uppercase font-bold tracking-wider text-slate-300 mt-1">Community Hours</div>
+    </div>
+
+    <div class="p-6 rounded-2xl glass-card border border-white/10 text-center">
+      <div class="text-3xl sm:text-4xl font-extrabold font-display text-[var(--brand-accent)]">
+        {outreachData.summary.studentsReached}
+      </div>
+      <div class="text-xs uppercase font-bold tracking-wider text-slate-300 mt-1">Students Reached</div>
+    </div>
+
+    <div class="p-6 rounded-2xl glass-card border border-white/10 text-center">
+      <div class="text-3xl sm:text-4xl font-extrabold font-display text-cyan-400">
+        {outreachData.summary.fllTeamsMentored}
+      </div>
+      <div class="text-xs uppercase font-bold tracking-wider text-slate-300 mt-1">FLL Teams Mentored</div>
+    </div>
+
+    <div class="p-6 rounded-2xl glass-card border border-white/10 text-center">
+      <div class="text-3xl sm:text-4xl font-extrabold font-display text-purple-400">
+        {outreachData.summary.workshopsHosted}
+      </div>
+      <div class="text-xs uppercase font-bold tracking-wider text-slate-300 mt-1">Workshops & Demos</div>
+    </div>
+  </div>
+
+  <!-- Interactive Outreach Timeline & Map Pins -->
+  <div class="rounded-3xl glass-card border border-white/10 p-6 sm:p-8 lg:p-10 space-y-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
+      <div>
+        <h3 class="text-2xl font-bold font-display text-white">Community STEM Initiatives</h3>
+        <p class="text-sm text-slate-400 mt-0.5">Empowering youth through engineering workshops, FLL coaching, and accessible robotics education.</p>
+      </div>
+
+      <!-- Filter Categories -->
+      <div class="flex flex-wrap gap-2" id="outreach-filter-tabs">
+        <button data-category="All" class="outreach-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[var(--brand-primary)] text-white">
+          All Programs
+        </button>
+        <button data-category="Camps & Workshops" class="outreach-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10">
+          Bootcamps
+        </button>
+        <button data-category="Mentorship" class="outreach-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10">
+          FLL Mentorship
+        </button>
+        <button data-category="Diversity & Inclusion" class="outreach-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10">
+          Inclusion
+        </button>
+      </div>
+    </div>
+
+    <!-- Events Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="outreach-events-grid">
+      {outreachData.events.map((event) => (
+        <div class="outreach-card p-6 rounded-2xl bg-slate-900/80 border border-white/5 hover:border-[var(--brand-primary-light)]/40 transition-all space-y-4" data-category={event.category}>
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[var(--brand-primary)]/15 text-[var(--brand-primary-light)] border border-[var(--brand-primary)]/30">
+              {event.category}
+            </span>
+            <span class="text-xs text-slate-400 flex items-center gap-1.5 font-mono">
+              <Icon name="calendar" size={13} />
+              <span>{event.date}</span>
+            </span>
+          </div>
+
+          <div>
+            <h4 class="text-lg font-bold text-white font-display">{event.title}</h4>
+            <div class="text-xs text-slate-400 flex items-center gap-1.5 mt-1">
+              <Icon name="map-pin" size={13} class="text-[var(--brand-accent)]" />
+              <span>{event.location}</span>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-300 leading-relaxed">
+            {event.description}
+          </p>
+
+          <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-2 text-xs text-emerald-400 font-medium">
+            <Icon name="sparkles" size={14} />
+            <span>Impact: {event.impact}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const filterBtns = document.querySelectorAll('.outreach-tab-btn');
+  const eventCards = document.querySelectorAll('.outreach-card');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => {
+        b.className = 'outreach-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10';
+      });
+      btn.className = 'outreach-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[var(--brand-primary)] text-white';
+
+      const selectedCat = btn.getAttribute('data-category');
+      eventCards.forEach(card => {
+        const cardCat = card.getAttribute('data-category');
+        if (selectedCat === 'All' || cardCat === selectedCat) {
+          (card as HTMLElement).style.display = 'block';
+        } else {
+          (card as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  });
+</script>

@@ -1,0 +1,79 @@
+---
+import { siteConfig } from '../../config/site.config';
+import Icon from './Icon.astro';
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="border-t border-white/10 bg-slate-950 text-slate-400">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
+      
+      <!-- Brand & Mission Column -->
+      <div class="md:col-span-2 space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-[var(--brand-primary)] flex items-center justify-center font-bold text-white text-xs">
+            #{siteConfig.number}
+          </div>
+          <span class="font-display font-bold text-xl text-white">
+            {siteConfig.name}
+          </span>
+        </div>
+        <p class="text-sm text-slate-400 max-w-sm">
+          {siteConfig.organization} • Dedicated to spreading Gracious Professionalism®, open-source STEM curriculum, and competitive engineering excellence.
+        </p>
+        <div class="flex items-center gap-3 pt-2">
+          {siteConfig.links.github && (
+            <a href={siteConfig.links.github} target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 hover:text-white transition-colors" aria-label="GitHub">
+              <Icon name="github" size={18} />
+            </a>
+          )}
+          {siteConfig.links.youtube && (
+            <a href={siteConfig.links.youtube} target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 hover:text-white transition-colors" aria-label="YouTube">
+              <Icon name="play" size={18} />
+            </a>
+          )}
+          {siteConfig.links.ftcScout && (
+            <a href={siteConfig.links.ftcScout} target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 hover:text-white transition-colors" aria-label="FTC Scout">
+              <Icon name="trophy" size={18} />
+            </a>
+          )}
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h3 class="text-xs uppercase font-bold tracking-wider text-slate-300 mb-4">Navigation</h3>
+        <ul class="space-y-2 text-sm">
+          <li><a href="/robot" class="hover:text-white transition-colors">The Robot & CAD</a></li>
+          <li><a href="/outreach" class="hover:text-white transition-colors">Community Outreach</a></li>
+          <li><a href="/matches" class="hover:text-white transition-colors">Match Results & OPR</a></li>
+          <li><a href="/team" class="hover:text-white transition-colors">Team Members</a></li>
+          <li><a href="/sponsors" class="hover:text-white transition-colors">Sponsorship Tiers</a></li>
+          <li><a href="/resources" class="hover:text-white transition-colors">Open-Source Files</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact & FIRST Disclaimer -->
+      <div class="space-y-3">
+        <h3 class="text-xs uppercase font-bold tracking-wider text-slate-300 mb-4">Contact</h3>
+        <p class="text-sm">
+          Have questions or want to partner with us?
+        </p>
+        <a href={`mailto:${siteConfig.contactEmail}`} class="inline-block text-sm font-semibold text-[var(--brand-primary-light)] hover:underline">
+          {siteConfig.contactEmail}
+        </a>
+        <div class="pt-2 text-xs text-slate-500">
+          Season: <span class="text-slate-400 font-semibold">{siteConfig.seasonGame} ({siteConfig.season})</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+      <p>© {currentYear} {siteConfig.name} #{siteConfig.number}. All rights reserved.</p>
+      <p>FIRST®, FIRST® Tech Challenge, and FIRST® Robotics are trademarks of For Inspiration and Recognition of Science and Technology (FIRST®).</p>
+    </div>
+  </div>
+</footer>

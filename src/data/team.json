@@ -1,0 +1,82 @@
+{
+  "members": [
+    {
+      "name": "Maya Lin",
+      "role": "Team Captain & Mechanical Lead",
+      "subteam": "Mechanical",
+      "grade": "12th Grade",
+      "quote": "Precision isn't an accident; it's calculated iteration.",
+      "favoriteMechanism": "Continuous Kevlar rigging linear slide"
+    },
+    {
+      "name": "Ethan Vance",
+      "role": "Software Lead & Driver",
+      "subteam": "Software",
+      "grade": "11th Grade",
+      "quote": "Bézier curves make autonomous look like magic.",
+      "favoriteMechanism": "Pedro Pathing curvature optimizer"
+    },
+    {
+      "name": "Sophia Chen",
+      "role": "Outreach Lead & Portfolio Editor",
+      "subteam": "Outreach",
+      "grade": "11th Grade",
+      "quote": "Robotics is only as impactful as the community it inspires.",
+      "favoriteMechanism": "Interactive STEM curriculum kits"
+    },
+    {
+      "name": "David Ramirez",
+      "role": "CAD Lead & Operator",
+      "subteam": "CAD",
+      "grade": "10th Grade",
+      "quote": "If it doesn't fit in CAD, it definitely won't fit in the pit.",
+      "favoriteMechanism": "Pocketed 6061 CNC drivetrain plates"
+    },
+    {
+      "name": "Aiden Patel",
+      "role": "Electrical & Vision Specialist",
+      "subteam": "Software",
+      "grade": "10th Grade",
+      "quote": "Wire management is the purest form of art.",
+      "favoriteMechanism": "Limelight 3A color segmentation"
+    },
+    {
+      "name": "Chloe Dubois",
+      "role": "Drive Coach & Strategy Lead",
+      "subteam": "Strategy",
+      "grade": "12th Grade",
+      "quote": "Matches are won in the 30 seconds before the buzzer sounds.",
+      "favoriteMechanism": "Real-time match scouting dashboard"
+    }
+  ],
+  "mentors": [
+    {
+      "name": "Dr. Robert Sterling",
+      "role": "Lead Technical Mentor",
+      "affiliation": "Senior Robotics Systems Engineer",
+      "bio": "Mentoring FTC teams for 8 seasons. Specializes in control systems, PIDF loops, and rapid prototyping."
+    },
+    {
+      "name": "Elena Rostova",
+      "role": "Software & Strategy Mentor",
+      "affiliation": "Software Architect",
+      "bio": "Alumna mentor guiding our students through version control, software architecture, and agile build sprints."
+    }
+  ],
+  "alumni": [
+    {
+      "name": "Lucas Meyer",
+      "classOf": "2024",
+      "college": "University of Washington",
+      "major": "Mechanical Engineering",
+      "note": "Currently designing autonomous underwater vehicles in collegiate robotics."
+    },
+    {
+      "name": "Zoe Takahashi",
+      "classOf": "2023",
+      "college": "UC Berkeley",
+      "major": "Computer Science & Robotics",
+      "note": "Software engineering intern working on computer vision navigation."
+    }
+  ]
+}

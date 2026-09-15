@@ -1,0 +1,28 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FtcScoutWidget from '../components/matches/FtcScoutWidget.astro';
+import { siteConfig } from '../config/site.config';
+import Icon from '../components/common/Icon.astro';
+---
+
+<Layout title={`Matches & Awards | ${siteConfig.name} #${siteConfig.number}`}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-16">
+    
+    <!-- Page Header -->
+    <div class="space-y-4 max-w-3xl">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--brand-accent)]/15 text-xs font-bold text-[var(--brand-accent)] border border-[var(--brand-accent)]/30">
+        <Icon name="trophy" size={16} />
+        <span>Performance & Match Data</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-extrabold font-display text-white tracking-tight">
+        Match Hub & Award Honors
+      </h1>
+      <p class="text-base text-slate-300 leading-relaxed">
+        Live tournament metrics, high scores, OPR statistics, and judged award honors from the {siteConfig.seasonGame} season.
+      </p>
+    </div>
+
+    <FtcScoutWidget />
+
+  </div>
+</Layout>

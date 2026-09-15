@@ -1,39 +1,66 @@
 ---
-import Footer from "../components/Footer.astro";
-import Header from "../components/header/Header.astro";
-import "../styles/global.css";
-import Font from "astro/components/Font.astro";
+import { siteConfig } from '../config/site.config';
+import Header from '../components/common/Header.astro';
+import Footer from '../components/common/Footer.astro';
+import ThemeConfigurator from '../components/common/ThemeConfigurator.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { 
+  title = `${siteConfig.name} #${siteConfig.number} | FTC Robotics`,
+  description = `${siteConfig.name} - FIRST Tech Challenge Team #${siteConfig.number} (${siteConfig.seasonGame} ${siteConfig.season}). ${siteConfig.tagline}`
+} = Astro.props;
+
+const { theme } = siteConfig;
 ---
 
 <!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="icon" href="/favicon.ico" />
-        <meta name="generator" content={Astro.generator} />
-        <title>The Huskyteers | FTC 19516</title>
-        <meta name="title" content="The Huskyteers | FTC 19516" />
-        <meta
-            name="description"
-            content="The Huskyteers are a FIRST Tech Challenge team based in the Anaheim, California."
-        />
-        <Font cssVariable="--font-jockey-one-astro" />
-        <Font cssVariable="--font-inter-astro" />
-    </head>
-    <body class="font-inter">
-        <Header />
-        <slot />
-        <Footer />
-    </body>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    
+    <!-- Open Graph / Meta -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Inject Dynamic Branding Colors directly from siteConfig -->
+    <style define:vars={{
+      'brand-primary': theme.primaryColor,
+      'brand-primary-light': theme.primaryColorLight,
+      'brand-primary-dark': theme.primaryColorDark,
+      'brand-accent': theme.accentColor,
+      'brand-accent2': theme.accentColor2,
+    }}>
+      :root {
+        --brand-primary: var(--brand-primary);
+        --brand-primary-light: var(--brand-primary-light);
+        --brand-primary-dark: var(--brand-primary-dark);
+        --brand-accent: var(--brand-accent);
+        --brand-accent2: var(--brand-accent2);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 bg-grid-pattern antialiased">
+    <Header />
+    <main class="flex-grow">
+      <slot />
+    </main>
+    <Footer />
+    {siteConfig.features.liveThemeCustomizer && <ThemeConfigurator />}
+  </body>
 </html>
-
-<style>
-    html,
-    body {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-    }
-</style>

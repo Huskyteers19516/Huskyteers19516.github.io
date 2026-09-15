@@ -1,0 +1,126 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MemberCard from '../components/team/MemberCard.astro';
+import { siteConfig } from '../config/site.config';
+import teamData from '../data/team.json';
+import Icon from '../components/common/Icon.astro';
+---
+
+<Layout title={`Team & Mentors | ${siteConfig.name} #${siteConfig.number}`}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-16">
+    
+    <!-- Page Header -->
+    <div class="space-y-4 max-w-3xl">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-500/15 text-xs font-bold text-purple-400 border border-purple-500/30">
+        <Icon name="users" size={16} />
+        <span>Student Leadership & Mentorship</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-extrabold font-display text-white tracking-tight">
+        Meet The Huskyteers
+      </h1>
+      <p class="text-base text-slate-300 leading-relaxed">
+        A diverse, student-led team of mechanical builders, software architects, CAD designers, and community ambassadors.
+      </p>
+    </div>
+
+    <!-- Subteam Filter Tabs -->
+    <div class="flex flex-wrap gap-2 pb-2 border-b border-white/10" id="team-filter-tabs">
+      <button data-subteam="All" class="team-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-[var(--brand-primary)] text-white">
+        All Members ({teamData.members.length})
+      </button>
+      <button data-subteam="Mechanical" class="team-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10">
+        Mechanical
+      </button>
+      <button data-subteam="Software" class="team-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10">
+        Software & Vision
+      </button>
+      <button data-subteam="CAD" class="team-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10">
+        CAD & Design
+      </button>
+      <button data-subteam="Outreach" class="team-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10">
+        Outreach
+      </button>
+      <button data-subteam="Strategy" class="team-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10">
+        Strategy & Drive
+      </button>
+    </div>
+
+    <!-- Members Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="members-grid">
+      {teamData.members.map((member) => (
+        <MemberCard {...member} />
+      ))}
+    </div>
+
+    <!-- Mentors Section -->
+    <div class="pt-8 border-t border-white/10 space-y-6">
+      <div>
+        <h3 class="text-2xl font-bold font-display text-white">Industry Mentors & Coaches</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Guiding our students in engineering principles, safety, and project management.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {teamData.mentors.map((mentor) => (
+          <div class="p-6 rounded-2xl glass-card border border-white/10 space-y-3">
+            <div>
+              <h4 class="text-lg font-bold font-display text-white">{mentor.name}</h4>
+              <span class="text-xs font-semibold text-[var(--brand-primary-light)]">{mentor.role}</span>
+              <span class="text-xs text-slate-400 block mt-0.5">{mentor.affiliation}</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">{mentor.bio}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Alumni Spotlight Section -->
+    {siteConfig.features.alumniSpotlight && (
+      <div class="pt-8 border-t border-white/10 space-y-6">
+        <div>
+          <h3 class="text-2xl font-bold font-display text-white">Alumni Network</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Where our graduates are pursuing higher education and careers in STEM.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {teamData.alumni.map((alum) => (
+            <div class="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="text-base font-bold text-white">{alum.name}</h4>
+                <span class="text-xs font-mono text-slate-400">Class of {alum.classOf}</span>
+              </div>
+              <div class="text-xs text-[var(--brand-accent)] font-medium">
+                {alum.college} • {alum.major}
+              </div>
+              <p class="text-xs text-slate-400 mt-1">{alum.note}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+  </div>
+</Layout>
+
+<script>
+  const filterBtns = document.querySelectorAll('.team-tab-btn');
+  const cards = document.querySelectorAll('.team-member-card');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => {
+        b.className = 'team-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10';
+      });
+      btn.className = 'team-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-[var(--brand-primary)] text-white';
+
+      const selectedSubteam = btn.getAttribute('data-subteam');
+      cards.forEach(card => {
+        const cardSubteam = card.getAttribute('data-subteam');
+        if (selectedSubteam === 'All' || cardSubteam === selectedSubteam) {
+          (card as HTMLElement).style.display = 'flex';
+        } else {
+          (card as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  });
+</script>

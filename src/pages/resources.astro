@@ -1,0 +1,118 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { siteConfig } from '../config/site.config';
+import resourcesData from '../data/resources.json';
+import Icon from '../components/common/Icon.astro';
+---
+
+<Layout title={`Open Source Resources | ${siteConfig.name} #${siteConfig.number}`}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-16">
+    
+    <!-- Page Header -->
+    <div class="space-y-4 max-w-3xl">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/15 text-xs font-bold text-cyan-400 border border-cyan-500/30">
+        <Icon name="code" size={16} />
+        <span>Open Source & Community Engineering</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-extrabold font-display text-white tracking-tight">
+        Open Source FTC Library
+      </h1>
+      <p class="text-base text-slate-300 leading-relaxed">
+        We believe in open knowledge sharing. Download our 3D CAD models, Pedro Pathing autonomous libraries, vision segmentation pipelines, and engineering whitepapers to use on your robot.
+      </p>
+    </div>
+
+    <!-- 3D CAD & Printable Parts -->
+    <div class="space-y-6">
+      <div class="flex items-center gap-2">
+        <Icon name="layers" size={20} class="text-[var(--brand-primary-light)]" />
+        <h2 class="text-2xl font-bold font-display text-white">3D CAD & Print Files (.STEP / .STL)</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {resourcesData.cadFiles.map((cad) => (
+          <div class="p-6 rounded-2xl glass-card border border-white/10 flex flex-col justify-between hover:border-white/20 transition-all space-y-4">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                <span>{cad.format}</span>
+                <span>{cad.downloads} Downloads</span>
+              </div>
+              <h3 class="text-base font-bold text-white">{cad.title}</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">{cad.description}</p>
+            </div>
+            <a 
+              href={cad.downloadUrl}
+              class="w-full text-center py-2.5 rounded-xl text-xs font-bold text-white bg-white/5 hover:bg-[var(--brand-primary)] border border-white/10 hover:border-transparent transition-all flex items-center justify-center gap-1.5"
+            >
+              <Icon name="download" size={14} />
+              <span>Download Model</span>
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Software & Code Repositories -->
+    <div class="space-y-6">
+      <div class="flex items-center gap-2">
+        <Icon name="code" size={20} class="text-cyan-400" />
+        <h2 class="text-2xl font-bold font-display text-white">Software Libraries & Vision Pipelines</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {resourcesData.codeRepositories.map((repo) => (
+          <div class="p-6 rounded-2xl glass-card border border-white/10 flex flex-col justify-between hover:border-white/20 transition-all space-y-4">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                <span class="text-cyan-400 font-bold">{repo.language}</span>
+                <span>★ {repo.stars} Stars</span>
+              </div>
+              <h3 class="text-lg font-bold text-white">{repo.title}</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">{repo.description}</p>
+            </div>
+            <a 
+              href={repo.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-full text-center py-2.5 rounded-xl text-xs font-bold text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] transition-all flex items-center justify-center gap-1.5 shadow-md"
+            >
+              <Icon name="github" size={14} />
+              <span>View on GitHub</span>
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Whitepapers & Strategy Guides -->
+    <div class="space-y-6">
+      <div class="flex items-center gap-2">
+        <Icon name="file-text" size={20} class="text-[var(--brand-accent)]" />
+        <h2 class="text-2xl font-bold font-display text-white">Engineering Whitepapers</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {resourcesData.whitepapers.map((doc) => (
+          <div class="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between gap-4 hover:border-white/20 transition-all">
+            <div class="space-y-1">
+              <h3 class="text-sm font-bold text-white">{doc.title}</h3>
+              <div class="text-[11px] text-slate-400 flex items-center gap-2 font-mono">
+                <span>{doc.pages}</span>
+                <span>•</span>
+                <span>Published {doc.year}</span>
+              </div>
+            </div>
+            <a 
+              href={doc.downloadUrl}
+              class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-white/10 hover:bg-white/20 transition-all flex items-center gap-1.5 whitespace-nowrap"
+            >
+              <Icon name="download" size={13} />
+              <span>PDF</span>
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
+</Layout>

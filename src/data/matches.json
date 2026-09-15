@@ -1,0 +1,54 @@
+{
+  "currentRank": "1st Alliance Captain (Cascade Qualifier)",
+  "overallRecord": {
+    "wins": 18,
+    "losses": 2,
+    "ties": 0,
+    "winRate": "90.0%"
+  },
+  "stats": {
+    "opr": "88.4",
+    "avgAutoPoints": "42.5",
+    "avgTeleOpPoints": "52.0",
+    "avgEndgamePoints": "26.0",
+    "highestMatchScore": "148 pts"
+  },
+  "events": [
+    {
+      "name": "Puget Sound Premier Qualifier",
+      "date": "November 16, 2025",
+      "venue": "Bellevue High School, Bellevue, WA",
+      "rank": "Rank 1 (Captain)",
+      "record": "6-0-0",
+      "awards": ["Think Award 1st Place", "Winning Alliance Captain"],
+      "status": "Completed"
+    },
+    {
+      "name": "Cascade Inter-League Tournament",
+      "date": "January 10, 2026",
+      "venue": "Lake Washington Event Center, Kirkland, WA",
+      "rank": "Rank 2 (Partner)",
+      "record": "5-1-0",
+      "awards": ["Inspire Award 2nd Place", "Finalist Alliance"],
+      "status": "Completed"
+    },
+    {
+      "name": "Washington State Championship",
+      "date": "February 21, 2026",
+      "venue": "ShoWare Center, Kent, WA",
+      "rank": "Rank 1 (Captain)",
+      "record": "7-1-0",
+      "awards": ["Innovate Award", "Control Award 1st Place", "Winning Alliance Captain"],
+      "status": "Completed"
+    },
+    {
+      "name": "FIRST Championship (Worlds)",
+      "date": "April 15-18, 2026",
+      "venue": "George R. Brown Convention Center, Houston, TX",
+      "rank": "Upcoming",
+      "record": "--",
+      "awards": ["Ochoa Division Qualifier"],
+      "status": "Upcoming"
+    }
+  ]
+}
