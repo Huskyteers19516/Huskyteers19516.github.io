@@ -1,90 +1,100 @@
-# Sample workflow for building and deploying an Astro site to GitHub Pages
+# Production deployment to GitHub Pages.
 #
-# To get started with Astro see: https://docs.astro.build/en/getting-started/
+# How publishing works
+# --------------------
+# The `gh-pages` branch is the single source of truth for what GitHub Pages
+# serves. Its root holds the production build of `main`, and
+# `pr-preview/pr-<number>/` sub-folders hold live previews of open pull
+# requests (see pr-preview.yml).
 #
+#   push to main ──► build ──► write dist/ to gh-pages root ──► publish gh-pages
+#   PR preview   ──► (pr-preview.yml writes its folder) ──► dispatches this
+#                    workflow with publish_only=true ──► publish gh-pages
+#
+# The publish job always runs on the `main` ref, which is the only branch the
+# `github-pages` environment allows to deploy.
 name: Deploy Astro site to Pages
 
 on:
-    # Runs on pushes targeting the default branch
     push:
         branches: ["main"]
 
-    # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
+        inputs:
+            publish_only:
+                description: "Skip the build and just publish the current gh-pages branch"
+                type: boolean
+                default: false
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-    contents: read
+    contents: write # push the built site to the gh-pages branch
     pages: write
     id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Serialise everything that touches gh-pages or the Pages deployment.
 concurrency:
     group: "pages"
     cancel-in-progress: false
 
-env:
-    BUILD_PATH: "." # default value when not using subfolders
-    # BUILD_PATH: subfolder
-
 jobs:
     build:
         name: Build
+        if: ${{ github.event_name == 'push' || !inputs.publish_only }}
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-            - name: Detect package manager
-              id: detect-package-manager
-              run: |
-                  if [ -f "${{ github.workspace }}/yarn.lock" ]; then
-                    echo "manager=yarn" >> $GITHUB_OUTPUT
-                    echo "command=install" >> $GITHUB_OUTPUT
-                    echo "runner=yarn" >> $GITHUB_OUTPUT
-                    echo "lockfile=yarn.lock" >> $GITHUB_OUTPUT
-                    exit 0
-                  elif [ -f "${{ github.workspace }}/package.json" ]; then
-                    echo "manager=npm" >> $GITHUB_OUTPUT
-                    echo "command=ci" >> $GITHUB_OUTPUT
-                    echo "runner=npx --no-install" >> $GITHUB_OUTPUT
-                    echo "lockfile=package-lock.json" >> $GITHUB_OUTPUT
-                    exit 0
-                  else
-                    echo "Unable to determine package manager"
-                    exit 1
-                  fi
+
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: "latest"
-                  cache: ${{ steps.detect-package-manager.outputs.manager }}
-                  cache-dependency-path: ${{ env.BUILD_PATH }}/${{ steps.detect-package-manager.outputs.lockfile }}
+                  node-version: lts/*
+                  cache: npm
+
             - name: Setup Pages
               id: pages
               uses: actions/configure-pages@v5
+
             - name: Install dependencies
-              run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
-              working-directory: ${{ env.BUILD_PATH }}
+              run: npm ci
+
             - name: Build with Astro
               run: |
-                  ${{ steps.detect-package-manager.outputs.runner }} astro build \
+                  npx --no-install astro build \
                     --site "${{ steps.pages.outputs.origin }}" \
                     --base "${{ steps.pages.outputs.base_path }}"
-              working-directory: ${{ env.BUILD_PATH }}
-            - name: Upload artifact
-              uses: actions/upload-pages-artifact@v3
-              with:
-                  path: ${{ env.BUILD_PATH }}/dist
 
-    deploy:
+            - name: Write production build to gh-pages root
+              uses: JamesIves/github-pages-deploy-action@v4
+              with:
+                  branch: gh-pages
+                  folder: dist
+                  clean: true
+                  clean-exclude: pr-preview
+                  force: false
+                  commit-message: "Production build of ${{ github.sha }}"
+
+    publish:
+        name: Publish
+        needs: build
+        # Run after a successful build, or straight away when the build was
+        # skipped because publish_only was requested.
+        if: ${{ !cancelled() && (needs.build.result == 'success' || needs.build.result == 'skipped') }}
+        runs-on: ubuntu-latest
         environment:
             name: github-pages
             url: ${{ steps.deployment.outputs.page_url }}
-        needs: build
-        runs-on: ubuntu-latest
-        name: Deploy
         steps:
+            - name: Checkout gh-pages
+              uses: actions/checkout@v4
+              with:
+                  ref: gh-pages
+
+            - name: Upload Pages artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  path: .
+
             - name: Deploy to GitHub Pages
               id: deployment
-              uses: actions/deploy-pages@v5
+              uses: actions/deploy-pages@v4
