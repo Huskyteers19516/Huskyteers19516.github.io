@@ -1,0 +1,26 @@
+---
+import { PUBLIC_PORTAL_URL } from "astro:env/client";
+import Workshop from "../components/workshop/workshop";
+import Layout from "../layouts/Layout.astro";
+import "../styles/workshop.css";
+
+const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
+---
+
+<Layout
+    title="The Workshop | The Huskyteers | FTC 19516"
+    description="3D-printed parts, CAD and software built by FTC team 19516, The Huskyteers: what each part does on the robot, every version and redesign along the way, and free design files any team can download."
+>
+    <!-- The JSON request is anonymous CORS; photos load with credentials, so warm both pools. -->
+    <link slot="head" rel="preconnect" href={portalUrl} crossorigin="anonymous" />
+    <link slot="head" rel="preconnect" href={portalUrl} />
+    <main>
+        <Workshop portalUrl={portalUrl} client:load />
+        <noscript>
+            <p class="mx-auto max-w-xl px-4 pb-16 text-center">
+                The Workshop needs JavaScript to load our projects from the
+                team portal.
+            </p>
+        </noscript>
+    </main>
+</Layout>

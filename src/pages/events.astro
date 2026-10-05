@@ -1,9 +1,25 @@
 ---
-import ComingSoon from "../components/ComingSoon.astro";
+import { PUBLIC_PORTAL_URL } from "astro:env/client";
+import LiveEvents from "../components/events/live-events";
 import Layout from "../layouts/Layout.astro";
+import "../styles/progress.css";
+import "../styles/events.css";
+
+const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
 ---
 
-<Layout>
-    <!-- TODO: Write content -->
-    <ComingSoon />
+<Layout
+    title="Events | The Huskyteers | FTC 19516"
+    description="Upcoming league meets, tournaments, scrimmages, competitions and outreach events of FTC team 19516, The Huskyteers, straight from our team calendar."
+>
+    <link slot="head" rel="preconnect" href={portalUrl} crossorigin="anonymous" />
+    <main>
+        <LiveEvents portalUrl={portalUrl} client:load />
+        <noscript>
+            <p class="mx-auto max-w-xl px-4 pb-16 text-center">
+                Our events calendar needs JavaScript to load the schedule from
+                the team portal.
+            </p>
+        </noscript>
+    </main>
 </Layout>

@@ -3,6 +3,16 @@ import Footer from "../components/Footer.astro";
 import Header from "../components/header/Header.astro";
 import "../styles/global.css";
 import Font from "astro/components/Font.astro";
+
+interface Props {
+    title?: string;
+    description?: string;
+}
+
+const {
+    title = "The Huskyteers | FTC 19516",
+    description = "The Huskyteers are a FIRST Tech Challenge team based in the Anaheim, California.",
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -13,14 +23,13 @@ import Font from "astro/components/Font.astro";
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico" />
         <meta name="generator" content={Astro.generator} />
-        <title>The Huskyteers | FTC 19516</title>
-        <meta name="title" content="The Huskyteers | FTC 19516" />
-        <meta
-            name="description"
-            content="The Huskyteers are a FIRST Tech Challenge team based in the Anaheim, California."
-        />
+        <title>{title}</title>
+        <meta name="title" content={title} />
+        <meta name="description" content={description} />
         <Font cssVariable="--font-jockey-one-astro" />
         <Font cssVariable="--font-inter-astro" />
+        <Font cssVariable="--font-geist-mono-astro" />
+        <slot name="head" />
     </head>
     <body class="font-inter">
         <Header />

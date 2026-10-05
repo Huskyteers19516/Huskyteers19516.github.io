@@ -3,6 +3,9 @@
 @theme {
     --font-jockey: var(--font-jockey-one-astro), sans-serif;
     --font-inter: var(--font-inter-astro), sans-serif;
+    --font-mono:
+        var(--font-geist-mono-astro), ui-monospace, SFMono-Regular, Menlo,
+        Consolas, monospace;
 }
 
 @plugin "daisyui";

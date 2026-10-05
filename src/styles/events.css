@@ -1,0 +1,173 @@
+/*
+ * Events page (src/pages/events.astro), on top of the HUD styles in
+ * progress.css. Each kind gets a tint through `[data-kind]`: green league
+ * meets, amber tournaments (ILT), blue scrimmages, violet competitions,
+ * rose outreach. Tints only color icons, dots and edges; text stays on the
+ * theme's base colors so it keeps its contrast.
+ */
+
+.hud [data-kind] {
+    --kind: var(--color-primary);
+    /* Light theme: a deeper shade for icons on near-white surfaces. */
+    --kind-ink: color-mix(in oklab, var(--kind), black 36%);
+}
+.hud [data-kind="ILT"] {
+    --kind: var(--color-warning);
+    --kind-ink: color-mix(in oklab, var(--kind), black 45%);
+}
+.hud [data-kind="SCRIMMAGE"] {
+    --kind: var(--color-info);
+}
+.hud [data-kind="COMPETITION"] {
+    --kind: oklch(66% 0.17 302);
+}
+.hud [data-kind="OUTREACH"] {
+    --kind: oklch(68% 0.17 8);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .hud [data-kind] {
+        --kind-ink: var(--kind);
+    }
+}
+:root[data-theme="dark"] .hud [data-kind] {
+    --kind-ink: var(--kind);
+}
+
+.ev-kind-icon {
+    color: var(--kind-ink);
+    background: color-mix(in oklab, var(--kind) 14%, transparent);
+    border: 1px solid color-mix(in oklab, var(--kind) 38%, transparent);
+}
+
+.ev-kind-tag {
+    color: color-mix(in oklab, var(--kind-ink) 70%, var(--color-base-content));
+    background: color-mix(in oklab, var(--kind) 12%, transparent);
+    border: 1px solid color-mix(in oklab, var(--kind) 26%, transparent);
+}
+
+.ev-kind-dot {
+    background: var(--kind, var(--hud-line));
+    box-shadow: 0 0 8px color-mix(in oklab, var(--kind, var(--hud-line)) 60%, transparent);
+}
+
+/* ---------- Next up ---------- */
+
+.ev-next {
+    background:
+        radial-gradient(
+            ellipse 60% 90% at 100% 0%,
+            color-mix(in oklab, var(--kind) 12%, transparent),
+            transparent 70%
+        ),
+        var(--hud-surface);
+}
+
+.ev-count-cell {
+    background: color-mix(in oklab, var(--color-base-100) 55%, var(--hud-card));
+}
+.ev-count-lead {
+    border-color: var(--hud-border);
+    box-shadow: 0 0 22px -12px var(--hud-glow);
+}
+.ev-count-lead > span:first-child {
+    color: var(--hud-ink);
+}
+
+.ev-live {
+    border-color: var(--hud-border);
+    box-shadow:
+        0 0 0 1px color-mix(in oklab, var(--color-primary) 14%, transparent),
+        0 0 36px -14px var(--hud-glow);
+}
+
+/* ---------- Lists ---------- */
+
+.ev-rule {
+    background: linear-gradient(90deg, var(--hud-border), transparent);
+}
+
+.ev-row::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.85rem;
+    bottom: 0.85rem;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--kind);
+    box-shadow: 0 0 10px color-mix(in oklab, var(--kind) 55%, transparent);
+}
+.ev-row-live {
+    border-color: var(--hud-border);
+    box-shadow:
+        0 0 0 1px color-mix(in oklab, var(--color-primary) 14%, transparent),
+        0 12px 32px -22px var(--hud-glow);
+}
+
+.ev-date {
+    background: color-mix(in oklab, var(--kind) 9%, var(--color-base-100) 40%);
+    border: 1px solid color-mix(in oklab, var(--kind) 24%, transparent);
+}
+
+.ev-link {
+    color: var(--hud-ink);
+    text-underline-offset: 3px;
+    border-radius: 0.375rem;
+}
+.ev-link:hover {
+    text-decoration: underline;
+}
+a.ev-link.grid:hover {
+    text-decoration: none;
+    background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+}
+
+/* ---------- Filter chips ---------- */
+
+.ev-chip {
+    color: color-mix(in oklab, var(--color-base-content) 82%, transparent);
+    background: var(--hud-card);
+    border: 1px solid var(--hud-border-soft);
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+.ev-chip:hover {
+    border-color: var(--hud-border);
+    color: var(--color-base-content);
+}
+.ev-chip[aria-pressed="true"] {
+    color: var(--color-base-content);
+    background: color-mix(
+        in oklab,
+        var(--kind, var(--color-primary)) 16%,
+        var(--hud-surface)
+    );
+    border-color: color-mix(
+        in oklab,
+        var(--kind, var(--color-primary)) 55%,
+        transparent
+    );
+    box-shadow: 0 0 18px -8px
+        color-mix(in oklab, var(--kind, var(--color-primary)) 60%, transparent);
+}
+.ev-chip-count {
+    color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+}
+.ev-chip[aria-pressed="true"] .ev-chip-count {
+    color: var(--color-base-content);
+}
+
+.ev-chip:focus-visible,
+.ev-link:focus-visible {
+    outline: 2px solid var(--hud-line);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ev-chip {
+        transition: none;
+    }
+}

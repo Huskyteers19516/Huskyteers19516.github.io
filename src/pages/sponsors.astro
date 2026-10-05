@@ -1,25 +1,54 @@
 ---
+import { PUBLIC_PORTAL_URL } from "astro:env/client";
 import ArrowUpRight from "@lucide/astro/icons/arrow-up-right";
+import SponsorBand from "../components/sponsors/sponsor-band";
 import Layout from "../layouts/Layout.astro";
 import RobotOutlined from "../assets/images/robot-outlined.png";
+import "../styles/progress.css";
+import "../styles/sponsors.css";
+
+const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
 ---
 
-<Layout>
-    <main
-        class="flex flex-col items-center pt-8 w-full min-h-screen container mx-auto mb-10 text-center px-3"
-    >
-        <div>
-            <h1 class="text-4xl font-bold">Our Sponsors</h1>
-            {
-                /* <div class="px-4 max-w-2xl flex flex-wrap gap-4 place-items-start justify-center">
-                        {sponsors.map((sponsor) => (
-                            <Sponsor key={sponsor.alt} {...sponsor} />
-                        ))}
-                    </div> */
-            }
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 place-items-center">
-            <img src={RobotOutlined.src} alt="Robot" class="max-w-md" />
+<Layout
+    title="Sponsors | The Huskyteers | FTC 19516"
+    description="The sponsors who support FTC team 19516, The Huskyteers, and how your company can sponsor our robots, competitions and outreach."
+>
+    <link slot="head" rel="preconnect" href={portalUrl} crossorigin="anonymous" />
+    <link slot="head" rel="preconnect" href={portalUrl} />
+    <main class="w-full min-h-screen mb-10">
+        <!-- One title, in the HUD style of /progress and /events. The sponsor
+             cards under it come from the Teammate Portal (nothing when it's
+             turned off there; the title and "Sponsor Us" stay). -->
+        <section aria-labelledby="sponsors-title" class="hud sponsor-band">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <p
+                    class="font-mono text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-base-content/65"
+                >
+                    FTC 19516 // With gratitude
+                </p>
+                <h1
+                    id="sponsors-title"
+                    class="mt-2 font-jockey text-6xl leading-[0.9] uppercase sm:text-7xl lg:text-8xl"
+                >
+                    <span class="text-base-content">Our </span><span
+                        class="hud-title-accent">Sponsors</span
+                    >
+                </h1>
+                <p
+                    class="mt-4 max-w-2xl text-base text-base-content/75 sm:text-lg"
+                >
+                    Thank you to every company and family who supports the
+                    Huskyteers. You build our robots, get us to competitions
+                    and power our outreach.
+                </p>
+            </div>
+            <SponsorBand portalUrl={portalUrl} client:load />
+        </section>
+        <div
+            class="container mx-auto px-3 grid grid-cols-1 md:grid-cols-2 place-items-center text-center"
+        >
+            <img src={RobotOutlined.src} alt="Robot" class="w-full max-w-md" />
             <div class="max-w-xl mt-8">
                 <h2 class="mt-5 text-center text-3xl font-semibold">
                     Sponsor Us
