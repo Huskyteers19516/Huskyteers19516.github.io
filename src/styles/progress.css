@@ -320,6 +320,42 @@
         var(--color-accent)
     );
 }
+/*
+ * A person's own photo from the Teammate Portal over their initials
+ * (team-board.tsx): the same hexagon, inset a little on leads so their
+ * gradient stays as a rim. Fixed size: swapping it in moves nothing.
+ */
+.hud-avatar-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: var(--hud-avatar-bg);
+    clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%);
+}
+.hud-avatar-lead > .hud-avatar-photo {
+    inset: 2px;
+    width: calc(100% - 4px);
+    height: calc(100% - 4px);
+}
+
+/*
+ * Portal photos (src/components/team/portal-photo.tsx) fade in over what
+ * the frame already shows once they've loaded.
+ */
+.portal-photo {
+    opacity: 0;
+    transition: opacity 0.35s ease-out;
+}
+.portal-photo[data-loaded] {
+    opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+    .portal-photo {
+        transition: none;
+    }
+}
 
 .hud-chip {
     color: var(--hud-ink);

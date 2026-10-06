@@ -75,3 +75,16 @@ export function httpUrl(v: unknown, max = 500): string | null {
 
 /** Portal ids in public URLs (same rule as the portal's PUBLIC_API_ID_RE). */
 export const PORTAL_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
+
+/**
+ * A portal answer that wasn't 2xx, with its status, so a caller can tell a
+ * deliberate "not here" (the per-person endpoint's 404) from an outage.
+ */
+export class PortalHttpError extends Error {
+    readonly status: number;
+    constructor(status: number) {
+        super(`HTTP ${status}`);
+        this.name = "PortalHttpError";
+        this.status = status;
+    }
+}

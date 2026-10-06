@@ -126,6 +126,30 @@ const submitted = (v: unknown, open: number): number =>
     Math.min(count(v), open);
 
 /**
+ * One entry of `people` (also the `person` of the per-person answer,
+ * GET /api/public/progress/people/{id}). Null without an id or a name.
+ */
+export function parseProgressPerson(p: unknown): ProgressPerson | null {
+    if (!isObj(p)) return null;
+    const id = text(p.id, 128);
+    const name = text(p.name, 80);
+    if (!id || !name) return null;
+    const itemsOpen = count(p.itemsOpen);
+    return {
+        id,
+        name,
+        subteam: text(p.subteam, 40),
+        role: text(p.role, 60) ?? "",
+        itemsDone: count(p.itemsDone),
+        itemsOpen,
+        itemsSubmitted: submitted(p.itemsSubmitted, itemsOpen),
+        completion: percent(p.completion),
+        doneLast7Days: count(p.doneLast7Days),
+        lastDoneAt: isoDate(p.lastDoneAt),
+    };
+}
+
+/**
  * Validates an unknown JSON value against the public progress contract.
  * Returns null when the payload is unusable (wrong shape entirely).
  */
@@ -161,26 +185,12 @@ export function parseProgress(raw: unknown): ProgressPayload | null {
 
     const seenIds = new Set<string>();
     const people: ProgressPerson[] = [];
-    for (const p of list(raw.people)) {
+    for (const entry of list(raw.people)) {
         if (people.length >= MAX_PEOPLE) break;
-        if (!isObj(p)) continue;
-        const id = text(p.id, 128);
-        const name = text(p.name, 80);
-        if (!id || !name || seenIds.has(id)) continue;
-        seenIds.add(id);
-        const itemsOpen = count(p.itemsOpen);
-        people.push({
-            id,
-            name,
-            subteam: text(p.subteam, 40),
-            role: text(p.role, 60) ?? "",
-            itemsDone: count(p.itemsDone),
-            itemsOpen,
-            itemsSubmitted: submitted(p.itemsSubmitted, itemsOpen),
-            completion: percent(p.completion),
-            doneLast7Days: count(p.doneLast7Days),
-            lastDoneAt: isoDate(p.lastDoneAt),
-        });
+        const p = parseProgressPerson(entry);
+        if (!p || seenIds.has(p.id)) continue;
+        seenIds.add(p.id);
+        people.push(p);
     }
 
     const recent: ProgressRecent[] = [];

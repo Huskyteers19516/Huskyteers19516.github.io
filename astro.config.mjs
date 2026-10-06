@@ -5,9 +5,13 @@ import react from "@astrojs/react";
 
 import tailwindcss from "@tailwindcss/vite";
 
+import peoplePhotos from "./src/integrations/people-photos.mjs";
+
 // https://astro.build/config
 export default defineConfig({
-    integrations: [react()],
+    // peoplePhotos: warns about photos with location data and keeps unused
+    // originals in src/assets/images/people/ out of the build (Our Team page).
+    integrations: [react(), peoplePhotos()],
     env: {
         schema: {
             // The Teammate Portal the live pages read from:

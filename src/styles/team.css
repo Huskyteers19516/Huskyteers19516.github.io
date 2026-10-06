@@ -1,0 +1,421 @@
+/*
+ * The Our Team page (src/pages/about/team.astro): teammate cards
+ * (Person.astro), the live band and the profile dialog
+ * (src/components/team/*). Built on the HUD tokens of progress.css (the page
+ * is wrapped in `.hud`), so it follows the light and dark themes.
+ */
+
+/* ---------- Cards ---------- */
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+@media (width >= 40rem) {
+    .team-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+}
+@media (width >= 48rem) {
+    .team-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+@media (width >= 64rem) {
+    .team-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
+
+.team-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 1.125rem 0.75rem 0.875rem;
+    text-align: center;
+    color: var(--color-base-content);
+    background: var(--hud-card);
+    border: 1px solid var(--hud-border-soft);
+    border-radius: 0.875rem;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.team-card:hover {
+    border-color: var(--hud-border);
+    box-shadow:
+        0 0 0 1px color-mix(in oklab, var(--color-primary) 12%, transparent),
+        0 14px 34px -22px var(--hud-glow);
+    transform: translateY(-2px);
+}
+.team-card:focus-visible {
+    outline: 2px solid var(--hud-line);
+    outline-offset: 3px;
+}
+.team-card:active {
+    transform: translateY(0);
+}
+
+/* "Open" hint in the corner. */
+.team-card-open {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    color: var(--hud-ink);
+    opacity: 0.35;
+    transition: opacity 0.2s ease;
+}
+.team-card:hover .team-card-open,
+.team-card:focus-visible .team-card-open {
+    opacity: 1;
+}
+
+.team-name {
+    display: -webkit-box;
+    margin-top: 0.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.team-roles {
+    display: block;
+    margin-top: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    line-height: 1.35;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
+}
+
+/* The live line, filled by the TeamLive island. Empty: takes no room. */
+.team-live {
+    display: block;
+    width: 100%;
+    margin-top: auto;
+}
+.team-live:not(:empty) {
+    padding-top: 0.75rem;
+}
+.team-live-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.team-meter {
+    position: relative;
+    display: block;
+    flex: 1;
+    height: 0.25rem;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+.team-meter-bar {
+    position: absolute;
+    inset: 0 auto 0 0;
+    display: block;
+    border-radius: 9999px;
+    transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.team-live-count {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* ---------- Photos / initials ---------- */
+
+.team-photo {
+    --size: 5.5rem;
+    --pad: 3px;
+    position: relative;
+    display: block;
+    flex-shrink: 0;
+    width: var(--size);
+    height: var(--size);
+    padding: var(--pad);
+    border-radius: 9999px;
+    background: var(--hud-border);
+}
+@media (width >= 40rem) {
+    .team-photo {
+        --size: 6.5rem;
+    }
+}
+.team-photo-lead {
+    background: linear-gradient(
+        135deg,
+        var(--color-primary),
+        var(--color-accent)
+    );
+    box-shadow: 0 0 22px -6px var(--hud-glow);
+}
+.team-photo > img,
+.team-photo > .team-initials {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    border-radius: 9999px;
+    box-shadow: 0 0 0 2px var(--color-base-100);
+}
+.team-photo > img {
+    object-fit: cover;
+    /* Links (not resized at build time): keep heads in, like the crops. */
+    object-position: 50% 15%;
+    background: var(--hud-avatar-bg);
+}
+.team-initials {
+    place-items: center;
+    font-family: var(--font-mono);
+    font-size: calc(var(--size) * 0.3);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--hud-ink);
+    background:
+        radial-gradient(
+            circle at 30% 25%,
+            color-mix(in oklab, var(--color-primary) 16%, transparent),
+            transparent 60%
+        ),
+        var(--hud-avatar-bg);
+}
+.team-photo-xl {
+    --size: 6rem;
+}
+@media (width >= 40rem) {
+    .team-photo-xl {
+        --size: 11rem;
+        --pad: 4px;
+    }
+}
+
+/*
+ * The person's own photo from the Teammate Portal (team-live.tsx), laid
+ * exactly over the frame's photo or initials: same circle, same ring, so
+ * swapping it in moves nothing. Empty (no portal photo): not there at all.
+ */
+.team-photo-portal {
+    position: absolute;
+    inset: var(--pad);
+    display: block;
+    border-radius: 9999px;
+    pointer-events: none;
+}
+.team-photo-portal:empty {
+    display: none;
+}
+.team-photo-portal > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 9999px;
+    background: var(--hud-avatar-bg);
+    box-shadow: 0 0 0 2px var(--color-base-100);
+}
+
+/* ---------- Live band & links ---------- */
+
+.team-dash-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hud-ink);
+    text-underline-offset: 4px;
+}
+.team-dash-link:hover {
+    text-decoration: underline;
+}
+.team-dash-link:focus-visible {
+    outline: 2px solid var(--hud-line);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+.team-dash-link svg {
+    transition: transform 0.2s ease;
+}
+.team-dash-link:hover svg {
+    transform: translateX(3px);
+}
+
+/* Phones: shows / folds the band's subteam meters. */
+.team-band-toggle:hover {
+    color: var(--hud-ink);
+}
+.team-band-toggle:focus-visible {
+    outline: 2px solid var(--hud-line);
+    outline-offset: 3px;
+}
+
+/* ---------- Dialog ---------- */
+
+dialog.team-dialog {
+    width: min(60rem, calc(100vw - 2rem));
+    max-width: none;
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    padding: 0;
+    overflow: hidden;
+    color: var(--color-base-content);
+    background: var(--color-base-100);
+    border: 1px solid var(--hud-border);
+    border-radius: 1.25rem;
+    box-shadow:
+        0 30px 80px -30px rgb(0 0 0 / 0.55),
+        0 0 60px -30px var(--hud-glow);
+}
+dialog.team-dialog[open] {
+    display: flex;
+    flex-direction: column;
+}
+dialog.team-dialog::backdrop {
+    background: rgb(4 12 10 / 0.62);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+/* Phones: a sheet from the bottom, as tall as its content (scrolls inside). */
+@media (width < 40rem) {
+    dialog.team-dialog {
+        width: 100%;
+        max-height: calc(100dvh - 0.75rem);
+        margin: auto 0 0;
+        border-width: 1px 0 0;
+        border-radius: 1.25rem 1.25rem 0 0;
+    }
+}
+
+.team-dialog-head {
+    border-bottom: 1px solid var(--hud-border-soft);
+    background:
+        linear-gradient(
+            100deg,
+            color-mix(in oklab, var(--color-primary) 8%, transparent),
+            transparent 55%
+        ),
+        var(--color-base-100);
+}
+.team-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--hud-border) transparent;
+}
+
+.team-icon-btn {
+    color: var(--color-base-content);
+    background: color-mix(in oklab, var(--color-base-content) 6%, transparent);
+    border: 1px solid var(--hud-border-soft);
+}
+.team-icon-btn:hover {
+    border-color: var(--hud-border);
+    background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+}
+.team-icon-btn:focus-visible {
+    outline: 2px solid var(--hud-line);
+    outline-offset: 2px;
+}
+
+.team-role {
+    color: var(--color-base-content);
+    background: color-mix(in oklab, var(--color-base-content) 7%, transparent);
+    border: 1px solid var(--hud-border-soft);
+}
+.team-role-lead {
+    color: var(--hud-ink);
+    background: color-mix(in oklab, var(--color-primary) 13%, transparent);
+    border-color: var(--hud-border);
+}
+
+.team-done-row:not(:last-child) {
+    border-bottom: 1px solid var(--hud-border-soft);
+}
+.team-whole-task {
+    color: var(--hud-ink);
+    background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+}
+
+/* Mini weekly chart: 24 px columns, 4 px rounded tops, square at the base. */
+.team-bar {
+    border-radius: 4px 4px 0 0;
+    background: linear-gradient(to top, var(--hud-line), var(--color-accent));
+    transition:
+        height 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+        filter 0.15s ease;
+}
+.team-bar-partial {
+    background: repeating-linear-gradient(
+        -45deg,
+        var(--hud-line) 0 3px,
+        color-mix(in oklab, var(--hud-line) 45%, transparent) 3px 6px
+    );
+}
+.team-bar-active {
+    filter: brightness(1.15) drop-shadow(0 0 6px var(--hud-glow));
+}
+
+.team-skel {
+    background: linear-gradient(
+        100deg,
+        var(--hud-track) 30%,
+        color-mix(in oklab, var(--color-primary) 12%, var(--hud-track)) 50%,
+        var(--hud-track) 70%
+    );
+    background-size: 220% 100%;
+    animation: hud-shimmer 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    dialog.team-dialog[open] {
+        animation: team-dialog-in 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    dialog.team-dialog[open]::backdrop {
+        animation: team-fade 0.2s ease-out;
+    }
+}
+@keyframes team-dialog-in {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+    }
+}
+@keyframes team-fade {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .team-card,
+    .team-card-open,
+    .team-meter-bar,
+    .team-bar,
+    .team-dash-link svg {
+        transition: none;
+    }
+    .team-card:hover {
+        transform: none;
+    }
+    .team-dash-link:hover svg {
+        transform: none;
+    }
+    .team-skel {
+        animation: none;
+    }
+}

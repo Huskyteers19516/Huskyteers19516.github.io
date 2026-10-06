@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { PortalHttpError } from "../../lib/portal-json";
 import { readJson } from "./types";
 
 /** Fetches one raw (unvalidated) payload. */
@@ -29,6 +30,12 @@ export interface LiveFeedOptions<T extends PortalPayload> {
     wakeDebounceMs?: number;
     /** The server's snapshot time (ISO), for "updated … ago". */
     updatedAt?: (payload: T) => string | null;
+    /**
+     * An answer after which there's nothing to poll for (e.g. the per-person
+     * endpoint saying that person isn't public): polling stops until the
+     * fetcher changes.
+     */
+    final?: (payload: T) => boolean;
 }
 
 const BACKOFF_BASE_MS = 5_000;
@@ -42,6 +49,7 @@ const WAKE_DEBOUNCE_MS = 4_000;
  * bucket in the URL keeps every visitor on one shared CDN entry per window
  * while making sure the browser never hands back an older answer from its
  * own cache. No request cache headers are sent, so the CDN is never bypassed.
+ * A non-2xx answer throws a PortalHttpError carrying the status.
  */
 export function portalJsonFetcher(
     portalUrl: string,
@@ -57,7 +65,7 @@ export function portalJsonFetcher(
             credentials: "omit",
             headers: { Accept: "application/json" },
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new PortalHttpError(res.status);
         return readJson(res);
     };
 }
@@ -86,13 +94,19 @@ function sameContent(a: PortalPayload | null, b: PortalPayload): boolean {
  * paused while hidden, refreshed on focus, exponential backoff on errors.
  * Pass `fetcher = null` to stay idle (e.g. until the data source is known).
  * An unchanged answer keeps the previous `data` object, so memoized views
- * don't re-render.
+ * don't re-render. The state belongs to one fetcher: when the fetcher
+ * changes (or becomes null), the old answer is dropped at once — never shown
+ * for another source.
  */
 export function useLiveFeed<T extends PortalPayload>(
     fetcher: JsonFetcher | null,
     options: LiveFeedOptions<T>,
 ) {
-    const [state, setState] = useState<LiveFeedState<T>>(initialState);
+    const [owned, setOwned] = useState<{
+        fetcher: JsonFetcher | null;
+        state: LiveFeedState<T>;
+    }>({ fetcher, state: initialState });
+    const state = owned.fetcher === fetcher ? owned.state : initialState;
     const runRef = useRef<() => void>(() => {});
     // parse / updatedAt are read through a ref: callers may pass new
     // closures each render without restarting the loop.
@@ -109,6 +123,15 @@ export function useLiveFeed<T extends PortalPayload>(
         let failures = 0;
         let lastAttempt = 0;
         let succeeded = false;
+        let stopped = false;
+        /** Updates this fetcher's state (starting from scratch for a new one). */
+        const setState = (
+            next: (prev: LiveFeedState<T>) => LiveFeedState<T>,
+        ) =>
+            setOwned((o) => ({
+                fetcher,
+                state: next(o.fetcher === fetcher ? o.state : initialState),
+            }));
 
         const hidden = () => document.visibilityState === "hidden";
 
@@ -131,12 +154,13 @@ export function useLiveFeed<T extends PortalPayload>(
             const timeout = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
             try {
                 const raw = await fetcher!(ctrl.signal);
-                const { parse, updatedAt } = optsRef.current;
+                const { parse, updatedAt, final } = optsRef.current;
                 const parsed = parse(raw);
                 if (!parsed) throw new Error("Unexpected response");
                 if (disposed) return;
                 failures = 0;
                 succeeded = true;
+                stopped = final?.(parsed) === true;
                 const now = Date.now();
                 const stamp = parsed.enabled ? updatedAt?.(parsed) : null;
                 let age = stamp ? now - Date.parse(stamp) : 0;
@@ -151,7 +175,7 @@ export function useLiveFeed<T extends PortalPayload>(
                     failures: 0,
                     retryAt: null,
                 }));
-                if (pollMs > 0) schedule(pollMs);
+                if (pollMs > 0 && !stopped) schedule(pollMs);
             } catch {
                 if (disposed) return;
                 failures += 1;
@@ -175,8 +199,9 @@ export function useLiveFeed<T extends PortalPayload>(
             }
         }
 
-        /** Whether a wake should fetch at all (fetch-once feeds stop after a success). */
-        const polling = () => pollMs > 0 || !succeeded || failures > 0;
+        /** Whether a wake should fetch at all (fetch-once feeds stop after a success, any feed after a `final` answer). */
+        const polling = () =>
+            !stopped && (pollMs > 0 || !succeeded || failures > 0);
 
         const wake = () => {
             if (disposed || hidden() || !polling()) return;

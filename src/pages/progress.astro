@@ -11,7 +11,10 @@ const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
     title="Live Progress | The Huskyteers | FTC 19516"
     description="Live task progress of FTC team 19516, The Huskyteers: team, subteam and member checklist progress, streamed from our Teammate Portal."
 >
+    <!-- Two warm connections: the JSON is a CORS fetch, the portal photos are
+         plain <img> requests, and browsers keep those in separate pools. -->
     <link slot="head" rel="preconnect" href={portalUrl} crossorigin="anonymous" />
+    <link slot="head" rel="preconnect" href={portalUrl} />
     <main>
         <LiveProgress portalUrl={portalUrl} client:load />
         <noscript>

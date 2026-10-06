@@ -4,7 +4,9 @@
  * by `import.meta.env.DEV`, so it never ships in the production bundle.
  *
  * Open /progress?demo=1 (live-updating), or ?demo=private | error | flaky |
- * hidden (names + titles hidden) | notitles (titles hidden) | empty.
+ * hidden (names + titles hidden) | notitles (titles hidden) | empty, or
+ * nophotos | photoerror for the people's portal photos
+ * (src/components/team/demo-photos.ts).
  *
  * All names below are fictional.
  */
@@ -52,6 +54,9 @@ const ROSTER: [string, Key | null, string][] = [
     ["Ruby Singh", "BUSINESS", "Business Team"],
     ["Theo Martin", "BUSINESS", "Business Team"],
 ];
+
+/** The mock people's names (the dev photo demo lists them). */
+export const DEMO_NAMES: readonly string[] = ROSTER.map(([name]) => name);
 
 const TITLES: Record<Key, string[]> = {
     BUILD: [

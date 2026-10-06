@@ -1,6 +1,78 @@
 ---
+/*
+ * OUR TEAM PAGE
+ *
+ * Adding / editing people: edit `sections` below, same as always
+ * ({ name, roles, image? }). Each entry becomes a card (Person.astro);
+ * clicking a card opens that person's profile.
+ *
+ * Photos come from the Teammate Portal automatically: each teammate uploads
+ * their own photo in the portal (Settings -> My photo) and it shows on their
+ * card, in their profile and next to their name on /progress (which knows
+ * only portal photos) — nothing to do here. It's matched
+ * by name like the live numbers (the name here must equal their name in the
+ * portal; case, spaces and accents ignored — the portal sends a hash of each
+ * name, never the name, and the site hashes the names below the same way)
+ * and shows while they leave "Show my photo on the team website" on, nobody
+ * who manages their account holds it off in the portal (Admin -> People;
+ * renaming yourself in the portal holds it until a leader checks the new
+ * name), and the portal's "Show members' photos on the team website" is on
+ * (Admin -> Team website). Turning either off (or removing the photo) takes
+ * it off the site within a few minutes; no rebuild. The folder photo and an
+ * explicit `image` still work: `image` overrides the portal photo, the
+ * folder photo is the fallback for anyone without one.
+ *
+ * Which photo a card shows:
+ *   1. `image` on the entry, when set — always, even if they have a portal
+ *      photo (use it to override);
+ *   2. their portal photo;
+ *   3. a photo in src/assets/images/people/ named after them (the fallback
+ *      for people without a portal photo, e.g. before they upload one);
+ *   4. their initials.
+ *
+ * Adding a photo here instead: put it in src/assets/images/people/ and name
+ * the file after the person: their name in lowercase, spaces -> hyphens,
+ * accents removed, apostrophes dropped. .png, .jpg, .jpeg or .webp:
+ *     Tommy Ho        -> tommy-ho.jpg
+ *     Wolfgang Lengsfeld -> wolfgang-lengsfeld.png
+ *     José O'Neil     -> jose-oneil.webp
+ * It's picked up automatically at build time, cropped square from the top
+ * and resized (no code change needed). Or set `image` on an entry to use a
+ * file with another name from that folder (image: "ethan.png"), a file in
+ * public/ (image: "/images/x.jpg") or a link (image: "https://…").
+ * Only exact names match: ethan.png matches nobody on its own (no one here is
+ * called just "Ethan").
+ *
+ * Before adding a photo to the folder:
+ *   - Ask the teammate first: this repo and the site are public.
+ *   - Remove location data (phones put GPS in the file): export it without
+ *     location, or run  exiftool -all= -overwrite_original <file>.  The build
+ *     warns about a photo that still has EXIF or GPS data.
+ * Every file in that folder is public in the GitHub repo. A file that matches
+ * nobody (say, someone who left) isn't shown and the build leaves it out of
+ * the site, with a "[team] … matches nobody" warning: delete it from the repo
+ * too.
+ *
+ * Live numbers: the "Team progress — live" band, the "12 done" meter on each
+ * card and the profile's stats and finished tasks come from the Teammate
+ * Portal's public progress (/progress uses the same data). A card gets live
+ * numbers when its name here equals the person's name in the portal (case,
+ * spaces and accents ignored). That works while the portal shows full names
+ * (Admin -> Team website -> name style "full", the default); with initials
+ * or hidden names the cards just show no live numbers (and /progress doesn't
+ * link people here). A profile lists what someone finished only while the
+ * portal's "Show each person's profile on the Our Team page" is on (Admin ->
+ * Team website); otherwise it shows their numbers. Share a profile with
+ * /about/team?person=tommy-ho.
+ */
+import { PUBLIC_PORTAL_URL } from "astro:env/client";
 import Person from "../../components/Person.astro";
+import { resolvePhoto, warnUnusedPhotos } from "../../components/team/photos";
+import { buildRoster } from "../../components/team/roster";
+import TeamLive from "../../components/team/team-live";
 import Layout from "../../layouts/Layout.astro";
+import "../../styles/progress.css";
+import "../../styles/team.css";
 
 interface PersonData {
     name: string;
@@ -81,50 +153,120 @@ const sections: { title: string; people: PersonData[] }[] = [
         ],
     },
 ];
+
+// ---- Page plumbing below: nothing to edit when adding people or photos ----
+
+const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
+
+// Build log: photos in src/assets/images/people/ that match nobody here.
+warnUnusedPhotos(sections.flatMap((section) => section.people));
+
+// Everyone once (a name listed twice is one person with both positions),
+// with the large photo for their profile dialog and where it came from.
+const roster = await Promise.all(
+    buildRoster(sections).map(async (person) => {
+        const image = person.entries.find((entry) => entry.image)?.image;
+        const photo = await resolvePhoto(person.name, image);
+        return {
+            slug: person.slug,
+            name: person.name,
+            roles: person.roles,
+            lead: person.lead,
+            photo: photo?.large ?? null,
+            // "image" keeps its photo even when they have a portal photo.
+            photoSource: photo?.source ?? null,
+        };
+    }),
+);
+
+const headingId = (title: string) =>
+    `team-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 ---
 
-<Layout>
-    <main
-        class="flex flex-col items-center pt-8 w-full min-h-screen container mx-auto mb-10 text-center"
-    >
-        <div class="max-w-lg">
-            <h1 class="font-bold text-4xl mb-5">Our Team</h1>
-            <p>
-                We are an FTC team from Fairmont Preparatory Academy, entering
-                our third year in the FIRST Tech Challenge. Combining business
-                and technical skills, our team thrives on collaboration and
-                innovation, driven by strong bonds and a shared commitment to
-                STEM excellence.
-                <br />
-                <br />
-                Fairmont Prep Robotics is dedicated to building a culture of teamwork
-                and creativity. Our mission is to inspire future STEM leaders, excel
-                in FIRST programs, and make a meaningful impact on our school and
-                community.
-            </p>
-        </div>
-        {
-            sections.map(({ title, people }) => (
-                <div class="flex gap-3 flex-col items-center">
-                    {title && (
-                        <h2 class="text-bold text-3xl text-center mt-10 font-semibold">
-                            {title}
-                        </h2>
-                    )}
-                    <div
-                        class={
-                            "flex flex-row gap-3 flex-wrap place-content-center" +
-                            (title ? "" : " mt-3")
-                        }
+<Layout
+    title="Our Team | The Huskyteers | FTC 19516"
+    description="Meet The Huskyteers, FTC team 19516 from Fairmont Preparatory Academy: our leadership and members, with live progress from our Teammate Portal."
+>
+    <!-- Two warm connections: the JSON is a CORS fetch, the portal photos are
+         plain <img> requests, and browsers keep those in separate pools. -->
+    <link slot="head" rel="preconnect" href={portalUrl} crossorigin="anonymous" />
+    <link slot="head" rel="preconnect" href={portalUrl} />
+    <main class="hud hud-bg min-h-screen">
+        <div
+            class="relative mx-auto max-w-7xl px-4 pt-10 pb-16 sm:px-6 lg:px-8 lg:pt-14"
+        >
+            <header class="max-w-3xl">
+                <p
+                    class="font-mono text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-base-content/65"
+                >
+                    FTC 19516 // The people
+                </p>
+                <h1
+                    class="mt-2 font-jockey text-6xl leading-[0.9] uppercase sm:text-7xl lg:text-8xl"
+                >
+                    <span class="text-base-content">Our </span><span
+                        class="hud-title-accent">Team</span
                     >
-                        {people
-                            // .toSorted((a, b) => compare(a.name, b.name))
-                            .map((person) => (
-                                <Person key={person.name} {...person} />
-                            ))}
-                    </div>
-                </div>
-            ))
-        }
+                </h1>
+                <p class="mt-5 text-base text-base-content/80 sm:text-lg">
+                    We are an FTC team from Fairmont Preparatory Academy, entering
+                    our third year in the FIRST Tech Challenge. Combining business
+                    and technical skills, our team thrives on collaboration and
+                    innovation, driven by strong bonds and a shared commitment to
+                    STEM excellence.
+                </p>
+                <p class="mt-4 text-base text-base-content/80 sm:text-lg">
+                    Fairmont Prep Robotics is dedicated to building a culture of teamwork
+                    and creativity. Our mission is to inspire future STEM leaders, excel
+                    in FIRST programs, and make a meaningful impact on our school and
+                    community.
+                </p>
+            </header>
+
+            <TeamLive portalUrl={portalUrl} roster={roster} client:load />
+
+            {
+                sections.map(({ title, people }) => (
+                    <section
+                        aria-labelledby={title ? headingId(title) : undefined}
+                        class="mt-14"
+                    >
+                        {title && (
+                            <div class="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
+                                <h2
+                                    id={headingId(title)}
+                                    class="font-jockey text-4xl uppercase text-base-content sm:text-5xl"
+                                >
+                                    {title}
+                                </h2>
+                                <p class="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-base-content/65">
+                                    {people.length}{" "}
+                                    {people.length === 1 ? "person" : "people"}
+                                    <span class="max-sm:hidden">
+                                        {" "}
+                                        · select anyone for their profile
+                                    </span>
+                                </p>
+                            </div>
+                        )}
+                        <ul class="team-grid" role="list">
+                            {people
+                                // .toSorted((a, b) => compare(a.name, b.name))
+                                .map((person) => (
+                                    <li>
+                                        <Person {...person} />
+                                    </li>
+                                ))}
+                        </ul>
+                    </section>
+                ))
+            }
+
+            <noscript>
+                <p class="mt-10 text-sm text-base-content/70">
+                    Profiles and live progress need JavaScript.
+                </p>
+            </noscript>
+        </div>
     </main>
 </Layout>

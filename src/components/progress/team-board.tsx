@@ -1,5 +1,13 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
+import { ArrowUpRight } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { PortalPhoto } from "../team/portal-photo";
+import {
+    NO_PHOTOS,
+    portalPhotoFor,
+    type PhotoIndex,
+} from "../team/portal-photos";
+import { profileLinks, teamProfileHref } from "../team/roster";
 import { AnimatedNumber, Kicker, Meter, Panel, Ring, Swatch } from "./hud";
 import { formatDateTime, formatNumber, initials, shortAgo } from "./format";
 import { subteamMeta } from "./subteam-meta";
@@ -108,9 +116,22 @@ export const SubteamPanel = memo(function SubteamPanel({
 export const PersonCard = memo(function PersonCard({
     person,
     now,
+    profileHref = null,
+    photo = null,
 }: {
     person: ProgressPerson;
     now: number;
+    /**
+     * Their own photo from the Teammate Portal (matched by full name), shown
+     * over the initials once loaded; null: initials.
+     */
+    photo?: string | null;
+    /**
+     * Their profile on the Our Team page (the whole card links there), or
+     * null: shortened names ("T.H.", "Tommy H.") and names two people share
+     * aren't linked (see `profileLinks`).
+     */
+    profileHref?: string | null;
 }) {
     const total = person.itemsDone + person.itemsOpen;
     const toDo = person.itemsOpen - person.itemsSubmitted;
@@ -120,23 +141,49 @@ export const PersonCard = memo(function PersonCard({
         ? `${person.itemsDone} done, ${person.completion}% of their items`
         : "No items yet";
     return (
-        <li className="hud-card group relative rounded-xl px-3 py-2 sm:p-3.5">
+        <li className="hud-card group relative rounded-xl px-3 py-2 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-(--hud-line) sm:p-3.5">
             <div className="flex items-center gap-3">
                 <span
                     className={cn(
-                        "hud-avatar grid size-9 shrink-0 place-items-center font-mono text-xs font-semibold sm:size-10 sm:text-sm",
+                        "hud-avatar relative grid size-9 shrink-0 place-items-center font-mono text-xs font-semibold sm:size-10 sm:text-sm",
                         lead && "hud-avatar-lead",
                     )}
                     aria-hidden="true"
                 >
                     {initials(person.name)}
+                    {photo && (
+                        <PortalPhoto
+                            key={photo}
+                            src={photo}
+                            className="hud-avatar-photo"
+                        />
+                    )}
                 </span>
                 <div className="min-w-0 flex-1">
                     <p
                         className="line-clamp-2 font-semibold leading-tight break-words text-base-content"
                         title={person.name}
                     >
-                        {person.name}
+                        {profileHref ? (
+                            <>
+                                {/* The whole card is the link to their
+                                    profile on the Our Team page
+                                    (/about/team?person=…). */}
+                                <a
+                                    href={profileHref}
+                                    className="outline-none after:absolute after:inset-0 after:rounded-xl after:content-[''] hover:underline hover:decoration-(--hud-line) hover:underline-offset-4"
+                                >
+                                    {person.name}
+                                    <span className="sr-only">, open profile</span>
+                                </a>
+                                <ArrowUpRight
+                                    className="ml-0.5 inline size-3.5 align-[-0.125em] text-(--hud-ink) opacity-0 transition-opacity group-hover:opacity-100 group-has-[a:focus-visible]:opacity-100 motion-reduce:transition-none"
+                                    aria-hidden="true"
+                                />
+                            </>
+                        ) : (
+                            person.name
+                        )}
                     </p>
                     {person.role && (
                         <p className="truncate font-mono text-[0.6875rem] uppercase tracking-wider text-base-content/70">
@@ -197,9 +244,12 @@ export const PersonCard = memo(function PersonCard({
                             </span>
                         )}
                         {person.lastDoneAt && (
+                            // Above the card's link overlay, so its tooltip
+                            // still shows on hover.
                             <time
                                 dateTime={person.lastDoneAt}
                                 title={`Last item done ${formatDateTime(person.lastDoneAt)}`}
+                                className="relative z-10"
                             >
                                 last {lastAgo(person.lastDoneAt, now)}
                             </time>
@@ -223,18 +273,38 @@ export function PeopleList({
     now,
     className,
     label,
+    links,
+    profileQuery = "",
+    photos = NO_PHOTOS,
 }: {
     people: ProgressPerson[];
     now: number;
     className?: string;
     label: string;
+    /** id -> profile slug of the people to link (`profileLinks` over everyone). */
+    links?: ReadonlyMap<string, string>;
+    /** Extra query for the profile links (the dev demo passes "demo=1"). */
+    profileQuery?: string;
+    /** The portal's team photos (`useTeamPhotos`). */
+    photos?: PhotoIndex;
 }) {
     if (people.length === 0) return null;
     return (
         <ul className={cn("grid gap-2.5", className)} aria-label={label}>
-            {[...people].sort(byName).map((p) => (
-                <PersonCard key={p.id} person={p} now={now} />
-            ))}
+            {[...people].sort(byName).map((p) => {
+                const slug = links?.get(p.id);
+                return (
+                    <PersonCard
+                        key={p.id}
+                        person={p}
+                        now={now}
+                        profileHref={
+                            slug ? teamProfileHref(slug, profileQuery) : null
+                        }
+                        photo={portalPhotoFor(photos, p.name)}
+                    />
+                );
+            })}
         </ul>
     );
 }
@@ -265,14 +335,22 @@ export function TeamBoard({
     subteams,
     people,
     now,
+    profileQuery,
+    photos,
 }: {
     subteams: ProgressSubteam[];
     people: ProgressPerson[];
     now: number;
+    /** Extra query for the profile links (the dev demo passes "demo=1"). */
+    profileQuery?: string;
+    /** The portal's team photos for the people rows (`useTeamPhotos`). */
+    photos?: PhotoIndex;
 }) {
     const keys = new Set(subteams.map((s) => s.key));
     const teamWide = people.filter((p) => !p.subteam || !keys.has(p.subteam));
     const showPeople = people.length > 0;
+    // Over everyone at once: a name two people share is linked for neither.
+    const links = useMemo(() => profileLinks(people), [people]);
 
     return (
         <section aria-labelledby="board-heading" className="mt-14">
@@ -296,6 +374,8 @@ export function TeamBoard({
                     <p className="max-w-md text-sm text-base-content/70">
                         Everyone&rsquo;s checklist progress, grouped by subteam
                         and listed alphabetically.
+                        {links.size > 0 &&
+                            " Select someone for their profile on the Our Team page."}
                     </p>
                 )}
             </div>
@@ -310,6 +390,9 @@ export function TeamBoard({
                         people={teamWide}
                         now={now}
                         label="Team-wide members"
+                        links={links}
+                        profileQuery={profileQuery}
+                        photos={photos}
                         className="sm:grid-cols-2 lg:grid-cols-3"
                     />
                 </div>
@@ -340,6 +423,9 @@ export function TeamBoard({
                                     people={members}
                                     now={now}
                                     label={`${subteamMeta(s.key, s.name).label} members`}
+                                    links={links}
+                                    profileQuery={profileQuery}
+                                    photos={photos}
                                     className="md:grid-cols-2 lg:grid-cols-1"
                                 />
                             )}

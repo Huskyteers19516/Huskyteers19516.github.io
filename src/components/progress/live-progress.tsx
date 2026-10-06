@@ -13,7 +13,9 @@ import { formatDay, formatNumber } from "./format";
 import { RecentFeed } from "./recent-feed";
 import { TeamBoard } from "./team-board";
 import type { ProgressEnabled } from "./types";
-import { useDemoOrLive } from "./use-live-feed";
+import { teamPhotosFetcher } from "../team/portal-photos";
+import { livePhotosFetcher, useTeamPhotos } from "../team/use-team-photos";
+import { useDemoOrLive, type JsonFetcher } from "./use-live-feed";
 import {
     portalFetcher,
     useNow,
@@ -23,18 +25,38 @@ import {
 } from "./use-progress-feed";
 import { isCurrentWeek, WeeklyChart } from "./weekly-chart";
 
-type Source = { fetcher: ProgressFetcher; pollMs?: number };
+type Source = {
+    fetcher: ProgressFetcher;
+    pollMs?: number;
+    /** GET /api/public/team-photos: people rows show their portal photo. */
+    photosFetcher: JsonFetcher;
+    /** Dev demo only: where a photo URL actually loads from. */
+    photoSrc?: (url: string) => string;
+};
 
 /** Resolve the data source on the client (dev-only ?demo= mock, else the portal). */
 function useSource(portalUrl: string) {
     return useDemoOrLive<Source>(
-        () => ({ fetcher: portalFetcher(portalUrl) }),
+        () => ({
+            fetcher: portalFetcher(portalUrl),
+            photosFetcher: livePhotosFetcher(portalUrl),
+        }),
         import.meta.env.DEV
             ? (mode) =>
-                  import("./demo-data").then(({ createDemoFetcher }) => ({
-                      fetcher: createDemoFetcher(mode),
-                      pollMs: 8_000,
-                  }))
+                  Promise.all([
+                      import("./demo-data"),
+                      import("../team/demo-photos"),
+                  ]).then(
+                      ([{ createDemoFetcher, DEMO_NAMES }, { createDemoPhotos }]) => {
+                          const photos = createDemoPhotos(mode, DEMO_NAMES);
+                          return {
+                              fetcher: createDemoFetcher(mode),
+                              pollMs: 8_000,
+                              photosFetcher: teamPhotosFetcher(photos.fetcher),
+                              photoSrc: photos.photoSrc,
+                          };
+                      },
+                  )
             : null,
         portalUrl,
     );
@@ -369,11 +391,20 @@ function announcementFor(feed: FeedState): string {
 export default function LiveProgress({ portalUrl }: { portalUrl: string }) {
     const source = useSource(portalUrl);
     const feed = useProgressFeed(source?.fetcher ?? null, source?.pollMs);
+    const photos = useTeamPhotos(
+        source?.photosFetcher ?? null,
+        portalUrl,
+        source?.photoSrc,
+    );
     // Coarse clock for relative times inside cards and the feed.
     const now = useNow(15_000);
     const announcement = announcementFor(feed);
     const data = feed.data;
     const live = feed.status === "live";
+    // Dev demo: profile links keep the mock data source.
+    const demoQuery = source?.demo
+        ? `demo=${encodeURIComponent(source.demo)}`
+        : "";
 
     const body = useMemo(() => {
         if (data?.enabled) {
@@ -384,6 +415,8 @@ export default function LiveProgress({ portalUrl }: { portalUrl: string }) {
                         subteams={data.subteams}
                         people={data.people}
                         now={now}
+                        profileQuery={demoQuery}
+                        photos={photos}
                     />
                     <footer className="mt-14 border-t border-base-content/10 pt-6 font-mono text-[0.6875rem] leading-relaxed uppercase tracking-wider text-base-content/70">
                         <p>
@@ -413,7 +446,7 @@ export default function LiveProgress({ portalUrl }: { portalUrl: string }) {
             );
         }
         return null;
-    }, [data, now, live]);
+    }, [data, now, live, demoQuery, photos]);
 
     return (
         <div className="hud hud-bg">
