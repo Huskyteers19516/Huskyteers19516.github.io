@@ -173,7 +173,11 @@ export function photoIndex(
 /** Someone's portal photo by their full name (hashed like the portal), or null. */
 export function portalPhotoFor(index: PhotoIndex, name: string): string | null {
     if (index.size === 0) return null;
-    const key = teamPhotoKey(name);
+    return portalPhotoForKey(index, teamPhotoKey(name));
+}
+
+/** The same, for a key worked out already (the Our Team cards carry keys, not full names). */
+export function portalPhotoForKey(index: PhotoIndex, key: string | null): string | null {
     return key ? (index.get(key) ?? null) : null;
 }
 

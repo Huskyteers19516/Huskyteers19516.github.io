@@ -50,8 +50,10 @@ import { doneLabel, liveSummary } from "./format";
 import { personDetailFetcher, personDetailPath } from "./person-detail";
 import { PersonDialog, type LiveStatus, type ProfileView } from "./person-dialog";
 import { PortalPhoto } from "./portal-photo";
+import { teamPhotoKey } from "./name-key";
 import {
     portalPhotoFor,
+    portalPhotoForKey,
     shownPhoto,
     teamPhotosFetcher,
     type BuildPhotoSource,
@@ -73,10 +75,18 @@ export interface PhotoSet {
     height: number;
 }
 
-/** One person on the page, as team.astro hands them over. */
+/**
+ * One person on the page, as team.astro hands them over. Never their full
+ * name: `name` is the short one shown ("Tommy H."), `key` the portal's hash
+ * of the full name (`teamPhotoKey`), used to find their live numbers and
+ * portal photo.
+ */
 export interface RosterCard {
     slug: string;
     name: string;
+    key: string | null;
+    /** Dev builds only (the ?demo=1 mock data is made from full names). */
+    devName?: string;
     roles: string[];
     lead: boolean;
     /** Their badges from team.astro, ready to draw. */
@@ -121,11 +131,11 @@ function useSource(portalUrl: string, roster: RosterCard[]) {
                   ]).then(([{ createTeamDemo }, { createDemoPhotos }]) => {
                       const demo = createTeamDemo(
                           mode,
-                          roster.map((r) => ({ name: r.name, roles: r.roles })),
+                          roster.map((r) => ({ name: r.devName ?? r.name, roles: r.roles })),
                       );
                       // The page's names plus the portal-only demo person.
                       const photos = createDemoPhotos(mode, [
-                          ...roster.map((r) => r.name),
+                          ...roster.map((r) => r.devName ?? r.name),
                           "Avery Lin",
                       ]);
                       return {
@@ -202,7 +212,7 @@ function cardPortalPhoto(
     photos: PhotoIndex,
 ): string | null {
     if (!card) return null;
-    const src = portalPhotoFor(photos, card.name);
+    const src = portalPhotoForKey(photos, card.key);
     return shownPhoto(card.photoSource, src) === "portal" ? src : null;
 }
 
@@ -428,7 +438,7 @@ export default function TeamLive({
         [roster],
     );
     const matches = useMemo(
-        () => matchLive(roster, data?.people ?? []),
+        () => matchLive(roster, data?.people ?? [], teamPhotoKey),
         [roster, data],
     );
     const slots = useCardSlots("data-live-slot");
