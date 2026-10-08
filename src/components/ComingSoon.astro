@@ -1,5 +1,20 @@
+---
+interface Props {
+    /** Website Coding slot key for the message, e.g. "season.2025-2026.coming-soon". */
+    editKey?: string;
+    /** Name of the slot in the portal's Website Coding page. */
+    editLabel?: string;
+}
+
+const { editKey = "coming-soon.message", editLabel = "Coming soon message" } =
+    Astro.props;
+---
+
 <div
     class="w-full min-h-[60vh] text-center flex justify-center items-center text-2xl font-bold"
+    data-edit-text={editKey}
+    data-edit-label={editLabel}
+    data-edit-multiline
 >
     Coming soon! Check back later for more information
 </div>

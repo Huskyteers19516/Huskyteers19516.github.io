@@ -1,6 +1,15 @@
 import { motion } from "motion/react";
 
-export default function TextReveal({ text }: { text: string }) {
+export default function TextReveal({
+    text,
+    editKey,
+    editLabel,
+}: {
+    text: string;
+    /** Website Coding slot key (the text can be changed from the portal). */
+    editKey?: string;
+    editLabel?: string;
+}) {
     return (
         <svg
             width="100%"
@@ -23,6 +32,8 @@ export default function TextReveal({ text }: { text: string }) {
                 fill="url(#gradient)"
                 stroke="url(#gradient)"
                 className="font-inter font-bold text-7xl stroke-1"
+                data-edit-text={editKey}
+                data-edit-label={editLabel}
                 initial={{
                     strokeDashoffset: 1000,
                     strokeDasharray: 1000,

@@ -13,6 +13,7 @@ import {
     pruneUnusedPeoplePhotos,
 } from "../src/integrations/people-photos.mjs";
 import { PortalHttpError } from "../src/lib/portal-json.ts";
+import { personTone, shownBadges } from "../src/components/team/badges.ts";
 import {
     doneDate,
     doneLabel,
@@ -243,6 +244,59 @@ describe("buildRoster", () => {
             "SOFTWARE",
         ]);
         assert.deepEqual(subteamsFromRoles(["Captain", "Design Team"]), []);
+    });
+});
+
+describe("badges", () => {
+    it("colors people: gold for leads, else their subteam", () => {
+        assert.equal(personTone(["Team Captain"]), "gold");
+        assert.equal(personTone(["Build Lead"]), "gold");
+        assert.equal(personTone(["Build Team"], true), "gold");
+        assert.equal(personTone(["Software Team"]), "teal");
+        assert.equal(personTone(["Build Team", "Software Team"]), "teal");
+        assert.equal(personTone(["Business Team"]), "violet");
+        assert.equal(personTone(["Build Team"]), "green");
+        assert.equal(personTone([]), "green");
+    });
+
+    it("fills in icon and tone, trims, drops blanks and repeated titles", () => {
+        const badges = shownBadges(
+            [
+                [
+                    { title: " Mission Commander ", description: " Team lead ", icon: "crown", tone: "gold" },
+                    { title: "  " },
+                    { title: "Tech Architect", icon: "nope", tone: "pink" },
+                ],
+                undefined,
+                [{ title: "mission commander", description: "again" }, { title: "Web Developer" }],
+            ],
+            "teal",
+        );
+        assert.deepEqual(badges, [
+            { title: "Mission Commander", description: "Team lead", icon: "crown", tone: "gold" },
+            { title: "Tech Architect", description: "", icon: "sparkles", tone: "teal" },
+            { title: "Web Developer", description: "", icon: "sparkles", tone: "teal" },
+        ]);
+    });
+
+    it("merges a name listed twice into one list, in the person's tone", () => {
+        const [tim, tommy] = buildRoster([
+            {
+                title: "Members",
+                people: [
+                    { name: "Tim Jung", roles: ["Build Team"], badges: [{ title: "Drivetrain Builder", tone: "green" }] },
+                    { name: "Tim Jung", roles: ["Software Team"], badges: [{ title: "Autonomous Coder" }] },
+                    { name: "Tommy Ho", roles: ["Team Captain"], badges: [{ title: "Mission Commander" }] },
+                ],
+            },
+        ]);
+        assert.equal(tim.tone, "teal");
+        assert.deepEqual(
+            tim.badges.map((b) => [b.title, b.tone]),
+            [["Drivetrain Builder", "green"], ["Autonomous Coder", "teal"]],
+        );
+        assert.equal(tommy.tone, "gold");
+        assert.equal(tommy.badges[0].tone, "gold");
     });
 });
 

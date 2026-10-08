@@ -45,6 +45,7 @@ import {
     useProgressFeed,
     type FeedState,
 } from "../progress/use-progress-feed";
+import type { ShownBadge } from "./badges";
 import { doneLabel, liveSummary } from "./format";
 import { personDetailFetcher, personDetailPath } from "./person-detail";
 import { PersonDialog, type LiveStatus, type ProfileView } from "./person-dialog";
@@ -78,6 +79,8 @@ export interface RosterCard {
     name: string;
     roles: string[];
     lead: boolean;
+    /** Their badges from team.astro, ready to draw. */
+    badges: ShownBadge[];
     /** The large (dialog) photo, or null for initials. */
     photo: PhotoSet | null;
     /** Where `photo` came from ("image" wins over the portal photo). */
@@ -153,7 +156,7 @@ function CardMeter({ person }: { person: ProgressPerson }) {
         : 0;
     return (
         <>
-            <span className="sr-only">. {liveSummary(person)}</span>
+            <span className="sr-only">{liveSummary(person)}</span>
             <span className="team-live-row" aria-hidden="true">
                 <span className="team-meter hud-meter">
                     {both > done && (
@@ -468,7 +471,7 @@ export default function TeamLive({
         }
     }, []);
 
-    // Cards are static buttons from Person.astro: one delegated listener.
+    // Cards' buttons are static HTML from Person.astro: one delegated listener.
     useEffect(() => {
         const onClick = (e: MouseEvent) => {
             if (e.defaultPrevented || !(e.target instanceof Element)) return;
@@ -510,6 +513,7 @@ export default function TeamLive({
                 name: card.name,
                 roles: card.roles,
                 lead: card.lead,
+                badges: card.badges,
                 photo: card.photo,
                 portalPhoto: cardPortalPhoto(card, photos),
                 live: matches.get(card.slug) ?? null,
@@ -523,6 +527,7 @@ export default function TeamLive({
             name: p.name,
             roles: p.role ? [p.role] : [],
             lead: /lead|captain/i.test(p.role),
+            badges: [],
             photo: null,
             portalPhoto: portalPhotoFor(photos, p.name),
             live: p,

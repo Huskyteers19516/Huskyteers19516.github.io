@@ -8,12 +8,21 @@
  * photos is ./photos.ts.
  */
 import type { ProgressPerson } from "../progress/types";
+import {
+    personTone,
+    shownBadges,
+    type Badge,
+    type BadgeTone,
+    type ShownBadge,
+} from "./badges.ts";
 
 /** One hand-edited entry of `sections` in team.astro. */
 export interface TeamMember<Image = unknown> {
     name: string;
     roles: string[];
     image?: Image;
+    /** Titles under their position (see ./badges.ts). */
+    badges?: Badge[];
 }
 
 export interface TeamSection<M extends TeamMember = TeamMember> {
@@ -194,6 +203,10 @@ export interface RosterPerson<M extends TeamMember = TeamMember> {
     sections: string[];
     /** Captain / any Lead, or listed under Leadership. */
     lead: boolean;
+    /** Their color: gold for leads, else their subteam's (`personTone`). */
+    tone: BadgeTone;
+    /** Every entry's badges, each title once, ready to draw. */
+    badges: ShownBadge[];
     /** The entries this person came from (a name can be listed twice). */
     entries: M[];
 }
@@ -205,7 +218,7 @@ export const isLeadRole = (roles: readonly string[], section = "") =>
 /**
  * Everyone on the page, once each, in page order. Entries with the same name
  * (same slug) are merged: "Tim Jung" listed under Build Team and Software
- * Team is one person with both positions.
+ * Team is one person with both positions (and both entries' badges).
  */
 export function buildRoster<M extends TeamMember>(
     sections: readonly TeamSection<M>[],
@@ -223,6 +236,8 @@ export function buildRoster<M extends TeamMember>(
                     roles: [],
                     sections: [],
                     lead: false,
+                    tone: "green",
+                    badges: [],
                     entries: [],
                 };
                 bySlug.set(slug, person);
@@ -237,6 +252,13 @@ export function buildRoster<M extends TeamMember>(
             }
             person.lead ||= isLeadRole(member.roles, section.title);
         }
+    }
+    for (const person of bySlug.values()) {
+        person.tone = personTone(person.roles, person.lead);
+        person.badges = shownBadges(
+            person.entries.map((e) => e.badges),
+            person.tone,
+        );
     }
     return [...bySlug.values()];
 }

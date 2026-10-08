@@ -66,10 +66,10 @@ function Hero({ feed }: { feed: LiveFeedState<EventsPayload> }) {
         <header className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
                 <Kicker>FTC 19516 // Season schedule</Kicker>
-                <h1 className="mt-2 font-jockey text-6xl leading-[0.9] uppercase sm:text-7xl lg:text-8xl">
+                <h2 className="mt-2 font-jockey text-5xl leading-[0.9] uppercase sm:text-6xl">
                     <span className="text-base-content">Team </span>
-                    <span className="hud-title-accent">Events</span>
-                </h1>
+                    <span className="hud-title-accent">Schedule</span>
+                </h2>
                 <p className="mt-4 max-w-xl text-base text-base-content/75 sm:text-lg">
                     League meets, tournaments, scrimmages, competitions and
                     outreach, straight from our team calendar. Come cheer us

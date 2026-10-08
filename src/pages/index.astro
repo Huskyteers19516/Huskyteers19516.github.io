@@ -5,9 +5,16 @@ import TextReveal from "../components/text-reveal";
 import { Timeline } from "../components/timeline";
 import TimelineEntry from "../components/timeline-entry";
 import Layout from "../layouts/Layout.astro";
-import Season2024Image from "../assets/images/2023-2024/team.png";
-import Season2025Image from "../assets/images/2024-2025/robot.webp";
-import Season2023Video from "../assets/images/2022-2023/robot.mp4";
+import CenterstageTeam from "../assets/images/2023-2024/team.png";
+import CenterstageRobot from "../assets/images/2023-2024/robot.jpg";
+import IntoTheDeepTeam from "../assets/images/2024-2025/team.png";
+import IntoTheDeepRobot from "../assets/images/2024-2025/robot.webp";
+import BiobuzzLogo from "../assets/images/logos/biobuzz.webp";
+import DecodeLogo from "../assets/images/logos/decode.webp";
+import IntoTheDeepLogo from "../assets/images/logos/into-the-deep.webp";
+import CenterstageLogo from "../assets/images/logos/centerstage.webp";
+import PowerplayLogo from "../assets/images/logos/powerplay.webp";
+import FreightFrenzyLogo from "../assets/images/logos/freight-frenzy.webp";
 ---
 
 <Layout>
@@ -18,9 +25,17 @@ import Season2023Video from "../assets/images/2022-2023/robot.mp4";
             <div
                 class="p-4 max-w-7xl mx-auto relative z-10 w-full pt-20 md:pt-0 lg:text-[20rem] italic md:text-[16rem] sm:text-[10rem] font-bold text-center"
             >
-                <TextReveal text="19516" client:load />
+                <TextReveal
+                    text="19516"
+                    editKey="home.hero.number"
+                    editLabel="Home: big number"
+                    client:load
+                />
                 <p
                     class="mt-4 font-normal text-base text-foreground max-w-lg text-center mx-auto not-italic"
+                    data-edit-text="home.hero.tagline"
+                    data-edit-label="Home: tagline under the big number"
+                    data-edit-multiline
                 >
                     Hi, we&apos;re 19516 Huskyteers, a First Tech Challenge
                     (FTC) robotics team based in Anaheim, California.
@@ -29,57 +44,81 @@ import Season2023Video from "../assets/images/2022-2023/robot.mp4";
             <BackgroundBeams client:load />
         </div>
         <Timeline client:load>
-            <TimelineEntry season="2025-2026" title="FTC Decode">
-                <SeasonPage
-                    href="/seasons/2025-2026"
-                    awards={[
-                        "Design Award - 1st Place at Wildcard",
-                        "Advanced to Wildcard",
-                        "Reach Award - 2nd Place at ILT",
-                    ]}
-                    image={Season2024Image.src}
-                />
+            <TimelineEntry
+                season="2026-2027"
+                title="FTC BioBuzz"
+                logo={BiobuzzLogo.src}
+                status="Season in progress"
+            >
+                <SeasonPage season="2026-2027" href="/seasons/2026-2027" />
             </TimelineEntry>
-            <TimelineEntry season="2024-2025" title="FTC Into the Deep">
+            <TimelineEntry
+                season="2025-2026"
+                title="FTC Decode"
+                logo={DecodeLogo.src}
+                awards={[
+                    "Reach Award - 2nd Place",
+                    "Dean's List Semi-Finalist - Tommy Ho",
+                ]}
+            >
+                <SeasonPage season="2025-2026" href="/seasons/2025-2026" />
+            </TimelineEntry>
+            <TimelineEntry
+                season="2024-2025"
+                title="FTC Into the Deep"
+                logo={IntoTheDeepLogo.src}
+                awards={["Connect Award - 1st Place", "Advanced to Wildcard"]}
+            >
                 <SeasonPage
+                    season="2024-2025"
                     href="/seasons/2024-2025"
-                    image={Season2025Image.src}
-                    awards={[
-                        "Advanced to Wildcard",
-                        "Connect Award - 1st Place",
-                    ]}
+                    teamImage={IntoTheDeepTeam.src}
+                    robotImage={IntoTheDeepRobot.src}
                 />
             </TimelineEntry>
-            <TimelineEntry season="2023-2024" title="FTC Centerstage">
+            <TimelineEntry
+                season="2023-2024"
+                title="FTC Centerstage"
+                logo={CenterstageLogo.src}
+                awards={[
+                    "Motivate Award - 1st Place",
+                    "Control Award - 2nd Place",
+                    "Think Award - 3rd Place",
+                    "Promote Award - 3rd Place",
+                ]}
+            >
                 <SeasonPage
+                    season="2023-2024"
                     href="/seasons/2023-2024"
-                    image={Season2024Image.src}
-                    awards={[
-                        "Think Award - 3rd Place",
-                        "Control Award - 2nd Place",
-                        "Motivate Award - 1st Place",
-                        "Promote Award - 3rd Place",
-                    ]}
+                    teamImage={CenterstageTeam.src}
+                    robotImage={CenterstageRobot.src}
                 />
             </TimelineEntry>
-            <TimelineEntry season="2022-2023" title="FTC Power Play">
+            <TimelineEntry
+                season="2022-2023"
+                title="FTC Power Play"
+                logo={PowerplayLogo.src}
+                awards={[
+                    "Promote Award - 1st Place",
+                    "Compass Award - 3rd Place",
+                ]}
+            >
                 <SeasonPage
+                    season="2022-2023"
                     href="/seasons/2022-2023"
-                    awards={[
-                        "Promote Award - 1st Place",
-                        "Compass Award - 3rd Place",
-                    ]}
-                    video="/images/2022-2023/robot.mp4"
+                    robotVideo="/images/2022-2023/robot.mp4"
                 />
             </TimelineEntry>
-            <TimelineEntry season="2021-2022" title="FTC Freight Frenzy">
-                <SeasonPage
-                    href="/seasons/2021-2022"
-                    awards={[
-                        "Innovation Award - 1st Place",
-                        "O1 Division Finalist Alliance",
-                    ]}
-                />
+            <TimelineEntry
+                season="2021-2022"
+                title="FTC Freight Frenzy"
+                logo={FreightFrenzyLogo.src}
+                awards={[
+                    "Innovation Award - 1st Place",
+                    "O1 Division Finalist Alliance",
+                ]}
+            >
+                <SeasonPage season="2021-2022" href="/seasons/2021-2022" />
             </TimelineEntry>
         </Timeline>
     </main>

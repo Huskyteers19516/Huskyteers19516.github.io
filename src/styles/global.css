@@ -79,3 +79,9 @@
     --depth: 0;
     --noise: 0;
 }
+
+/* Website Coding (src/components/site-content/SiteContent.astro): a paragraph
+   whose text was changed in the portal keeps the line breaks typed there. */
+[data-edit-multiline][data-edit-applied] {
+    white-space: pre-line;
+}

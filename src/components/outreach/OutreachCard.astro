@@ -1,0 +1,217 @@
+---
+/**
+ * One event card on the Outreach Events page (src/pages/events.astro): a
+ * swipeable photo carousel, then the date, location, title and description.
+ *
+ * The carousel is a scroll-snap strip, so swiping and keyboard scrolling
+ * work without JavaScript; the script below wires up the arrows and dots
+ * and keeps the active dot in sync with the scroll position.
+ *
+ * Title, date, location and description are "Website Coding" slots
+ * (events.<slug>.title / .date / .location / .description), and an event
+ * without photos in the repo gets an uploadable photo (events.<slug>.photo)
+ * where "Photos coming soon" shows: all changed from the Teammate Portal
+ * (Admin -> Website Coding). An empty date or location stays hidden until
+ * one is set there.
+ */
+import { Image } from "astro:assets";
+import Calendar from "@lucide/astro/icons/calendar";
+import MapPin from "@lucide/astro/icons/map-pin";
+import ChevronLeft from "@lucide/astro/icons/chevron-left";
+import ChevronRight from "@lucide/astro/icons/chevron-right";
+import ImageIcon from "@lucide/astro/icons/image";
+import { photosFor, type OutreachEvent } from "./events";
+
+interface Props {
+    event: OutreachEvent;
+}
+
+const { event } = Astro.props;
+const photos = photosFor(event.slug);
+const titleId = `outreach-${event.slug}`;
+const key = `events.${event.slug}`;
+---
+
+<article class="outreach-card hud-panel flex flex-col overflow-hidden" aria-labelledby={titleId} data-carousel>
+    <div class="relative aspect-[4/3] bg-base-300/60">
+        {
+            photos.length > 0 ? (
+                <ul
+                    class="outreach-track flex h-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
+                    aria-label={`Photos from ${event.title}`}
+                    tabindex="0"
+                    data-track
+                >
+                    {photos.map((photo, i) => (
+                        <li class="h-full w-full shrink-0 snap-center">
+                            <Image
+                                src={photo}
+                                alt={`${event.title}, photo ${i + 1} of ${photos.length}`}
+                                widths={[480, 800, 1200]}
+                                sizes="(min-width: 1280px) 400px, (min-width: 768px) 50vw, 100vw"
+                                class="h-full w-full object-cover"
+                                draggable="false"
+                            />
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <div
+                    class="flex h-full flex-col items-center justify-center gap-2 text-base-content/55"
+                    data-edit-image={`${key}.photo`}
+                    data-edit-label={`Outreach: ${event.title} (photo)`}
+                    data-edit-img-class="h-full w-full object-cover"
+                >
+                    <ImageIcon size={32} aria-hidden="true" />
+                    <span class="text-sm">Photos coming soon</span>
+                </div>
+            )
+        }
+        {
+            photos.length > 1 && (
+                <>
+                    <button
+                        type="button"
+                        class="outreach-arrow left-3"
+                        aria-label="Previous photo"
+                        data-prev
+                        disabled
+                    >
+                        <ChevronLeft size={20} aria-hidden="true" />
+                    </button>
+                    <button
+                        type="button"
+                        class="outreach-arrow right-3"
+                        aria-label="Next photo"
+                        data-next
+                    >
+                        <ChevronRight size={20} aria-hidden="true" />
+                    </button>
+                </>
+            )
+        }
+    </div>
+
+    {
+        photos.length > 1 && (
+            <div class="flex justify-center gap-2 pt-4">
+                {photos.map((_, i) => (
+                    <button
+                        type="button"
+                        class="outreach-dot"
+                        aria-label={`Show photo ${i + 1} of ${photos.length}`}
+                        aria-current={i === 0 ? "true" : undefined}
+                        data-dot={i}
+                    />
+                ))}
+            </div>
+        )
+    }
+
+    <div class="flex flex-1 flex-col gap-2 p-5 sm:p-6">
+        <!-- Date and location are always in the page (so they can be set from
+             the portal), hidden while empty. -->
+        <p
+            class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"
+            data-edit-optional={!(event.date || event.location) ? "" : undefined}
+            hidden={!(event.date || event.location)}
+        >
+            <span
+                class="outreach-date inline-flex items-center gap-1.5 font-semibold"
+                data-edit-optional={!event.date ? "" : undefined}
+                hidden={!event.date}
+            >
+                <Calendar size={16} aria-hidden="true" />
+                <span data-edit-text={`${key}.date`} data-edit-label={`Outreach: ${event.title} (date)`}
+                    >{event.date}</span
+                >
+            </span>
+            <span
+                class="inline-flex items-center gap-1.5 text-base-content/70"
+                data-edit-optional={!event.location ? "" : undefined}
+                hidden={!event.location}
+            >
+                <MapPin size={16} aria-hidden="true" />
+                <span
+                    data-edit-text={`${key}.location`}
+                    data-edit-label={`Outreach: ${event.title} (location)`}
+                    >{event.location ?? ""}</span
+                >
+            </span>
+        </p>
+        <h3
+            id={titleId}
+            class="text-xl font-semibold text-base-content sm:text-2xl"
+            data-edit-text={`${key}.title`}
+            data-edit-label={`Outreach: ${event.title} (title)`}
+        >
+            {event.title}
+        </h3>
+        <p
+            class="leading-relaxed text-base-content/75"
+            data-edit-text={`${key}.description`}
+            data-edit-label={`Outreach: ${event.title} (description)`}
+            data-edit-multiline
+        >
+            {event.description}
+        </p>
+    </div>
+</article>
+
+<script>
+    // Delegated, so it covers every card on the page with one set of listeners.
+    const cardOf = (el: Element | null) =>
+        el?.closest<HTMLElement>("[data-carousel]") ?? null;
+
+    function sync(card: HTMLElement) {
+        const track = card.querySelector<HTMLElement>("[data-track]");
+        if (!track) return;
+        const count = track.children.length;
+        const index = Math.round(track.scrollLeft / track.clientWidth);
+        card.querySelectorAll<HTMLElement>("[data-dot]").forEach((dot, i) => {
+            if (i === index) dot.setAttribute("aria-current", "true");
+            else dot.removeAttribute("aria-current");
+        });
+        const prev = card.querySelector<HTMLButtonElement>("[data-prev]");
+        const next = card.querySelector<HTMLButtonElement>("[data-next]");
+        if (prev) prev.disabled = index <= 0;
+        if (next) next.disabled = index >= count - 1;
+    }
+
+    function go(card: HTMLElement, index: number) {
+        const track = card.querySelector<HTMLElement>("[data-track]");
+        if (!track) return;
+        const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        track.scrollTo({
+            left: index * track.clientWidth,
+            behavior: reduce ? "auto" : "smooth",
+        });
+    }
+
+    const current = (card: HTMLElement) => {
+        const track = card.querySelector<HTMLElement>("[data-track]");
+        return track ? Math.round(track.scrollLeft / track.clientWidth) : 0;
+    };
+
+    document.addEventListener("click", (e) => {
+        const target = e.target as Element;
+        const button = target.closest<HTMLElement>("[data-prev], [data-next], [data-dot]");
+        const card = cardOf(button);
+        if (!button || !card) return;
+        if (button.hasAttribute("data-dot")) go(card, Number(button.dataset.dot));
+        else go(card, current(card) + (button.hasAttribute("data-next") ? 1 : -1));
+    });
+
+    // Scroll doesn't bubble: listen in the capture phase.
+    let frame = 0;
+    document.addEventListener(
+        "scroll",
+        (e) => {
+            const card = cardOf(e.target instanceof Element ? e.target : null);
+            if (!card) return;
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => sync(card));
+        },
+        { capture: true, passive: true },
+    );
+</script>

@@ -1,6 +1,8 @@
 ---
 import { PUBLIC_PORTAL_URL } from "astro:env/client";
 import LiveEvents from "../components/events/live-events";
+import OutreachCard from "../components/outreach/OutreachCard.astro";
+import { OUTREACH_EVENTS } from "../components/outreach/events";
 import Layout from "../layouts/Layout.astro";
 import "../styles/progress.css";
 import "../styles/events.css";
@@ -9,11 +11,53 @@ const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
 ---
 
 <Layout
-    title="Events | The Huskyteers | FTC 19516"
-    description="Upcoming league meets, tournaments, scrimmages, competitions and outreach events of FTC team 19516, The Huskyteers, straight from our team calendar."
+    title="Outreach Events | The Huskyteers | FTC 19516"
+    description="Outreach events FTC team 19516, The Huskyteers, has taken part in, from volunteering at GiGi's Playhouse and the Anaheim Public Library to Husky Preview Day, plus our upcoming season schedule."
 >
     <link slot="head" rel="preconnect" href={portalUrl} crossorigin="anonymous" />
     <main>
+        <section class="hud hud-bg" aria-labelledby="outreach-heading">
+            <div class="relative mx-auto max-w-7xl px-4 pt-10 pb-16 sm:px-6 lg:px-8 lg:pt-14">
+                <header class="max-w-2xl">
+                    <p
+                        class="font-mono text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-base-content/65"
+                        data-edit-text="events.header.kicker"
+                        data-edit-label="Outreach: small line above the title"
+                    >
+                        FTC 19516 // Community
+                    </p>
+                    <h1
+                        id="outreach-heading"
+                        class="mt-2 font-jockey text-6xl leading-[0.9] uppercase sm:text-7xl lg:text-8xl"
+                    >
+                        <span
+                            class="text-base-content"
+                            data-edit-text="events.header.title-start"
+                            data-edit-label="Outreach: title (white part)">Outreach</span
+                        >{" "}<span
+                            class="hud-title-accent"
+                            data-edit-text="events.header.title-accent"
+                            data-edit-label="Outreach: title (green part)">Events</span
+                        >
+                    </h1>
+                    <p
+                        class="mt-4 max-w-xl text-base text-base-content/75 sm:text-lg"
+                        data-edit-text="events.header.intro"
+                        data-edit-label="Outreach: intro text"
+                        data-edit-multiline
+                    >
+                        Sharing robotics and STEM with our community: the
+                        events we&rsquo;ve volunteered at, taught at and shown
+                        off our robot at.
+                    </p>
+                </header>
+
+                <div class="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    {OUTREACH_EVENTS.map((event) => <OutreachCard event={event} />)}
+                </div>
+            </div>
+        </section>
+
         <LiveEvents portalUrl={portalUrl} client:load />
         <noscript>
             <p class="mx-auto max-w-xl px-4 pb-16 text-center">

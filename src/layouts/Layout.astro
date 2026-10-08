@@ -1,6 +1,7 @@
 ---
 import Footer from "../components/Footer.astro";
 import Header from "../components/header/Header.astro";
+import SiteContent from "../components/site-content/SiteContent.astro";
 import "../styles/global.css";
 import Font from "astro/components/Font.astro";
 
@@ -35,6 +36,7 @@ const {
         <Header />
         <slot />
         <Footer />
+        <SiteContent />
     </body>
 </html>
 

@@ -7,9 +7,17 @@ import Layout from "../layouts/Layout.astro";
     <main
         class="min-h-[60vh] flex place-items-center place-content-center flex-col gap-3"
     >
-        Your page was lost into the deep!
+        <span data-edit-text="404.message" data-edit-label="Page not found: message"
+            >Your page was lost into the deep!</span
+        >
         <Link href="/">
-            <button class="btn btn-primary">Go back Centerstage (home)</button>
+            <button class="btn btn-primary"
+                ><span
+                    data-edit-text="404.button"
+                    data-edit-label="Page not found: button"
+                    >Go back Centerstage (home)</span
+                ></button
+            >
         </Link>
     </main>
 </Layout>

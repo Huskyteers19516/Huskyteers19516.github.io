@@ -1,8 +1,10 @@
 ---
 /**
- * One teammate card on the Our Team page (src/pages/about/team.astro).
+ * One teammate card on the Our Team page (src/pages/about/team.astro):
+ * name, photo, position, then their badges (BadgeList.astro).
  *
- * Props are an entry of the page's `sections`: { name, roles, image? }.
+ * Props are a person of the page's `sections` after `buildRoster`
+ * (src/components/team/roster.ts): { name, roles, image?, badges, tone }.
  * The photo is found at build time (src/components/team/photos.ts): `image`
  * if set, else a file in src/assets/images/people/ named after the person
  * ("tommy-ho.jpg"), else their initials. Unless `image` is set, the frame
@@ -10,13 +12,16 @@
  * own photo from the Teammate Portal over it when they have one (same size,
  * fades in once loaded, nothing moves).
  *
- * The card is a <button>: the page's live island (team-live.tsx) opens the
- * profile dialog when it's clicked and fills the empty `data-live-slot` with
- * a "12 done" meter when the person is in the portal's public progress.
+ * The name is a <button> stretched over the whole card: the page's live
+ * island (team-live.tsx) opens the profile dialog when it's clicked and
+ * fills the empty `data-live-slot` with a "12 done" meter when the person
+ * is in the portal's public progress.
  */
 import type { ImageMetadata } from "astro";
 import Maximize from "@lucide/astro/icons/maximize-2";
 import { initials } from "./progress/format";
+import BadgeList from "./team/BadgeList.astro";
+import type { BadgeTone, ShownBadge } from "./team/badges";
 import { resolvePhoto } from "./team/photos";
 import { joinRoles } from "./team/format";
 import { isLeadRole, slugify } from "./team/roster";
@@ -28,9 +33,12 @@ interface Props {
     image?: string | ImageMetadata;
     /** Highlight the photo ring (default: any Lead / Captain role). */
     lead?: boolean;
+    badges?: ShownBadge[];
+    /** Color of the position line (default green). */
+    tone?: BadgeTone;
 }
 
-const { name, roles = [], image, lead } = Astro.props;
+const { name, roles = [], image, lead, badges = [], tone = "green" } = Astro.props;
 const slug = slugify(name);
 const photo = await resolvePhoto(name, image);
 const isLead = lead ?? isLeadRole(roles);
@@ -38,13 +46,18 @@ const isLead = lead ?? isLeadRole(roles);
 const portalSlot = photo?.source !== "image";
 ---
 
-<button
-    type="button"
-    class="team-card"
-    data-person-card
-    data-slug={slug}
-    aria-haspopup="dialog"
->
+<article class="team-card" data-tone={tone}>
+    <h3 class="team-name">
+        <button
+            type="button"
+            class="team-card-hit"
+            data-person-card
+            data-slug={slug}
+            aria-haspopup="dialog"
+        >
+            {name}
+        </button>
+    </h3>
     <Maximize class="team-card-open size-3.5" aria-hidden="true" />
     <span class:list={["team-photo", isLead && "team-photo-lead"]}>
         {
@@ -66,14 +79,8 @@ const portalSlot = photo?.source !== "image";
         }
         {portalSlot && <span class="team-photo-portal" data-photo-slot={slug}></span>}
     </span>
-    <span class="team-name">{name}</span>
-    {
-        roles.length > 0 && (
-            <span class="team-roles">
-                <span class="sr-only">, </span>
-                {joinRoles(roles)}
-            </span>
-        )
-    }
+    {roles.length > 0 && <p class="team-position">{joinRoles(roles)}</p>}
+    {badges.length > 0 && <span class="team-divider" aria-hidden="true"></span>}
+    <BadgeList badges={badges} class="team-card-badges" />
     <span class="team-live" data-live-slot={slug}></span>
-</button>
+</article>

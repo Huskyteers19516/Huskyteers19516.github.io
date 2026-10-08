@@ -15,9 +15,17 @@ const Name = Astro.url.pathname === "/" ? "h1" : "p";
     mr-3
     sm:mr-4" />
     <Name class="flex flex-col gap-1 justify-center">
-        <span class="text-3xl sm:text-4xl font-bold uppercase text-primary">
+        <span
+            class="text-3xl sm:text-4xl font-bold uppercase text-primary"
+            data-edit-text="header.name"
+            data-edit-label="Header: team name"
+        >
             The Huskyteers
         </span>{" "}
-        <span class="text-4xl sm:text-5xl font-bold text-muted-foreground">19516</span>
+        <span
+            class="text-4xl sm:text-5xl font-bold text-muted-foreground"
+            data-edit-text="header.number"
+            data-edit-label="Header: team number">19516</span
+        >
     </Name>
 </div>

@@ -171,3 +171,74 @@ a.ev-link.grid:hover {
         transition: none;
     }
 }
+
+/* ---------- Outreach events (src/components/outreach) ---------- */
+
+.outreach-card {
+    --outreach-date: color-mix(in oklab, var(--color-warning), black 45%);
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .outreach-card {
+        --outreach-date: var(--color-warning);
+    }
+}
+:root[data-theme="dark"] .outreach-card {
+    --outreach-date: var(--color-warning);
+}
+
+.outreach-date {
+    color: var(--outreach-date);
+}
+
+.outreach-track {
+    scrollbar-width: none;
+}
+.outreach-track::-webkit-scrollbar {
+    display: none;
+}
+.outreach-track:focus-visible {
+    outline: 2px solid var(--hud-line);
+    outline-offset: -2px;
+}
+
+.outreach-arrow {
+    position: absolute;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    translate: 0 -50%;
+    border-radius: 0.625rem;
+    color: var(--color-base-content);
+    background: color-mix(in oklab, var(--color-base-100) 78%, transparent);
+    border: 1px solid var(--hud-border-soft);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    cursor: pointer;
+    transition:
+        opacity 150ms,
+        border-color 150ms;
+}
+.outreach-arrow:hover:not(:disabled) {
+    border-color: var(--hud-line);
+}
+.outreach-arrow:disabled {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.outreach-dot {
+    width: 2.25rem;
+    height: 0.625rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--color-base-content) 28%, transparent);
+    cursor: pointer;
+    transition:
+        background 150ms,
+        border-color 150ms;
+}
+.outreach-dot[aria-current="true"] {
+    background: var(--hud-line);
+    border-color: var(--hud-line);
+}

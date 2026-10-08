@@ -1,0 +1,81 @@
+---
+/**
+ * A teammate's badges on their card (Person.astro): icon, title and one
+ * line each, colored by tone. The profile dialog draws the same list with
+ * ./badge-list.tsx; the styles are `.team-badge*` in src/styles/team.css.
+ */
+import Bot from "@lucide/astro/icons/bot";
+import Camera from "@lucide/astro/icons/camera";
+import CodeXml from "@lucide/astro/icons/code-xml";
+import Cog from "@lucide/astro/icons/cog";
+import Cpu from "@lucide/astro/icons/cpu";
+import Crown from "@lucide/astro/icons/crown";
+import DraftingCompass from "@lucide/astro/icons/drafting-compass";
+import Gamepad2 from "@lucide/astro/icons/gamepad-2";
+import Globe from "@lucide/astro/icons/globe";
+import Handshake from "@lucide/astro/icons/handshake";
+import Megaphone from "@lucide/astro/icons/megaphone";
+import NotebookPen from "@lucide/astro/icons/notebook-pen";
+import Package from "@lucide/astro/icons/package";
+import Palette from "@lucide/astro/icons/palette";
+import Presentation from "@lucide/astro/icons/presentation";
+import Route from "@lucide/astro/icons/route";
+import Sparkles from "@lucide/astro/icons/sparkles";
+import Trophy from "@lucide/astro/icons/trophy";
+import Users from "@lucide/astro/icons/users";
+import Wrench from "@lucide/astro/icons/wrench";
+import type { BadgeIcon, ShownBadge } from "./badges";
+
+interface Props {
+    badges: ShownBadge[];
+    class?: string;
+}
+
+const ICONS: Record<BadgeIcon, typeof Crown> = {
+    crown: Crown,
+    cpu: Cpu,
+    wrench: Wrench,
+    cog: Cog,
+    compass: DraftingCompass,
+    package: Package,
+    code: CodeXml,
+    bot: Bot,
+    route: Route,
+    gamepad: Gamepad2,
+    globe: Globe,
+    notebook: NotebookPen,
+    presentation: Presentation,
+    megaphone: Megaphone,
+    handshake: Handshake,
+    palette: Palette,
+    camera: Camera,
+    trophy: Trophy,
+    users: Users,
+    sparkles: Sparkles,
+};
+
+const { badges, class: className } = Astro.props;
+---
+
+{
+    badges.length > 0 && (
+        <ul class:list={["team-badges", className]} aria-label="Badges">
+            {badges.map(({ title, description, icon, tone }) => {
+                const Icon = ICONS[icon];
+                return (
+                    <li class="team-badge" data-tone={tone}>
+                        <span class="team-badge-icon" aria-hidden="true">
+                            <Icon size={18} />
+                        </span>
+                        <span class="team-badge-text">
+                            <span class="team-badge-title">{title}</span>
+                            {description && (
+                                <span class="team-badge-desc">{description}</span>
+                            )}
+                        </span>
+                    </li>
+                );
+            })}
+        </ul>
+    )
+}

@@ -60,6 +60,8 @@ import {
     type PersonDetailEnabled,
     type PersonDone,
 } from "./person-detail";
+import type { ShownBadge } from "./badges";
+import { BadgeList } from "./badge-list";
 import { PortalPhoto } from "./portal-photo";
 import { firstName, subteamsFromRoles } from "./roster";
 import type { DetailFetcherFor, PhotoSet } from "./team-live";
@@ -72,6 +74,8 @@ export interface ProfileView {
     name: string;
     roles: string[];
     lead: boolean;
+    /** Their badges from team.astro (none for people only in the portal). */
+    badges: ShownBadge[];
     photo: PhotoSet | null;
     /**
      * Their own photo from the Teammate Portal, shown over `photo` (null:
@@ -779,6 +783,16 @@ function DialogBody({
                         </ul>
                     </div>
                 </section>
+
+                {view.badges.length > 0 && (
+                    <div className="px-4 pb-5 sm:px-6">
+                        <h3 className="sr-only">Badges</h3>
+                        <BadgeList
+                            badges={view.badges}
+                            className="team-dialog-badges"
+                        />
+                    </div>
+                )}
 
                 <div className="px-4 pb-5 sm:px-6">{liveBlock}</div>
 

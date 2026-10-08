@@ -34,10 +34,20 @@ export const Timeline = ({ children }: { children: React.ReactNode }) => {
         <div className="mx-auto font-inter container" ref={containerRef}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 place-items-start">
                 <div className="max-w-7xl mx-auto py-20 px-4 md:px-8 lg:px-10">
-                    <h2 className="text-lg md:text-4xl mb-4 text-foreground max-w-4xl font-semibold">
+                    {/* "Website Coding" slots: changed in the portal (Admin -> Website Coding). */}
+                    <h2
+                        className="text-lg md:text-4xl mb-4 text-foreground max-w-4xl font-semibold"
+                        data-edit-text="home.about.title"
+                        data-edit-label="Home: About Us heading"
+                    >
                         About Us
                     </h2>
-                    <p className="text-muted-foreground text-sm md:text-base max-w-sm">
+                    <p
+                        className="text-muted-foreground text-sm md:text-base max-w-sm"
+                        data-edit-text="home.about.text"
+                        data-edit-label="Home: About Us text"
+                        data-edit-multiline
+                    >
                         We are an FTC team from Fairmont Preparatory Academy,
                         entering our third year in the FIRST Tech Challenge.
                         Combining business and technical skills, our team
@@ -46,7 +56,13 @@ export const Timeline = ({ children }: { children: React.ReactNode }) => {
                     </p>
                     <a href="/about/team">
                         <div className="btn btn-primary mt-3">
-                            Our Team <ArrowUpRight />
+                            <span
+                                data-edit-text="home.about.button"
+                                data-edit-label="Home: About Us button"
+                            >
+                                Our Team
+                            </span>{" "}
+                            <ArrowUpRight />
                         </div>
                     </a>
                 </div>
@@ -55,6 +71,8 @@ export const Timeline = ({ children }: { children: React.ReactNode }) => {
                         src={TeamImage.src}
                         className="rounded-lg shadow-sm"
                         alt="Team Photo"
+                        data-edit-image="home.about.photo"
+                        data-edit-label="Home: About Us team photo"
                     />
                 </a>
             </div>

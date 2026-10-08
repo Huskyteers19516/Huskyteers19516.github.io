@@ -3,8 +3,19 @@
  * OUR TEAM PAGE
  *
  * Adding / editing people: edit `sections` below, same as always
- * ({ name, roles, image? }). Each entry becomes a card (Person.astro);
- * clicking a card opens that person's profile.
+ * ({ name, roles, image?, badges? }). Each person becomes a card
+ * (Person.astro): name, photo, position and their badges; clicking a card
+ * opens that person's profile. A name listed twice in a section is one card
+ * with both positions and both lists of badges.
+ *
+ * Badges are the short titles under the position, one line each on what
+ * the person does or did ("Mission Commander — Team lead and competition
+ * robot"). Base them on their real work (finished portal tasks, what they
+ * own on the team); the business team keeps them current. Each one is
+ * { title, description, icon?, tone? }: icons are listed in
+ * src/components/team/badges.ts (crown, cpu, wrench, cog, code, bot,
+ * gamepad, globe, palette, megaphone, …), tones are "gold", "green", "teal"
+ * and "violet" (default: gold for captains and leads, else their subteam's).
  *
  * Photos come from the Teammate Portal automatically: each teammate uploads
  * their own photo in the portal (Settings -> My photo) and it shows on their
@@ -67,8 +78,9 @@
  */
 import { PUBLIC_PORTAL_URL } from "astro:env/client";
 import Person from "../../components/Person.astro";
+import type { Badge } from "../../components/team/badges";
 import { resolvePhoto, warnUnusedPhotos } from "../../components/team/photos";
-import { buildRoster } from "../../components/team/roster";
+import { buildRoster, slugify } from "../../components/team/roster";
 import TeamLive from "../../components/team/team-live";
 import Layout from "../../layouts/Layout.astro";
 import "../../styles/progress.css";
@@ -78,10 +90,11 @@ interface PersonData {
     name: string;
     roles: string[];
     image?: string;
+    badges?: Badge[];
 }
 
 // roles
-const captain = "Captain";
+const captain = "Team Captain";
 const coCaptain = "Co-Captain";
 const buildLead = "Build Lead";
 const businessLead = "Business Lead";
@@ -112,44 +125,115 @@ const compare = (a: string, b: string) => {
         : compareStrings(lastA, lastB);
 };
 
+// Badges shared by everyone who worked on the same task.
+// portal: "Simple Parking Autonomous" (Oct 5): Stephen Yuan's task; the other
+// software members' items on it were checked off when it finished.
+const parkingAuto: Badge = {
+    icon: "bot",
+    tone: "teal",
+    title: "Autonomous Coder",
+    description: "Simple parking autonomous routine",
+};
+// portal: "Drivetrain Construction" (Oct 1 and Oct 3)
+const driveTrain: Badge = {
+    icon: "cog",
+    tone: "green",
+    title: "Drivetrain Builder",
+    description: "Built the robot's drivetrain",
+};
+
+// Badges marked "portal" come from tasks finished in the Teammate Portal;
+// the business team fills in and updates the rest.
 const sections: { title: string; people: PersonData[] }[] = [
     {
         title: "Leadership",
         people: [
-            { name: "Tommy Ho", roles: [captain] },
+            {
+                name: "Tommy Ho",
+                roles: [captain],
+                badges: [
+                    {
+                        icon: "crown",
+                        tone: "gold",
+                        title: "Mission Commander",
+                        description: "Team lead and competition robot",
+                    },
+                    {
+                        icon: "cpu",
+                        tone: "teal",
+                        title: "Tech Architect",
+                        description: "CAD mentor, inventory and portal dev",
+                    },
+                ],
+            },
             { name: "Ethan Zhang", roles: [buildLead] },
             { name: "Wolfgang Lengsfeld", roles: [buildLead] },
             { name: "Gwen Lengsfeld", roles: [businessLead] },
-            { name: "Jack Luo", roles: [softwareLead] },
-            { name: "Grant Story", roles: [buildLead]},
+            {
+                name: "Jack Luo",
+                roles: [softwareLead],
+                badges: [
+                    // portal: "TeleOp" (Sep 30)
+                    {
+                        icon: "gamepad",
+                        tone: "teal",
+                        title: "TeleOp Programmer",
+                        description: "Driver-controlled robot code",
+                    },
+                    // portal: "Website - The Workshop" (Oct 4)
+                    {
+                        icon: "globe",
+                        tone: "teal",
+                        title: "Web Developer",
+                        description: "Built the website's Workshop page",
+                    },
+                ],
+            },
+            {
+                name: "Grant Story",
+                roles: [buildLead],
+                badges: [driveTrain],
+            },
         ],
     },
     {
         title: "Members",
         people: [
-                { name: "Maximus Ku", roles: [buildTeam] },
-                { name: "Tim Jung", roles: [buildTeam] },
-                { name: "Michael Hyodo", roles: [softwareTeam] },
-                { name: "Tim Jung", roles: [softwareTeam] },
-                { name: "Elizabeth Hyodo", roles: [businessTeam] },
-                { name: "Viraaj Gaggar", roles: [businessTeam] },
-                { name: "Alivia Hsu", roles: [businessTeam] },
-                { name: "Jason Luo", roles: [businessTeam] },
-                { name: "Tiffany Yang", roles: [businessTeam] },
-                { name: "Felix Gu", roles: [softwareTeam] },
-                { name: "Jack Hu", roles: [softwareTeam] },
-                { name: "Brandon Shu", roles: [softwareTeam] },
-                { name: "Alice Wang", roles: [softwareTeam] },
-                { name: "Frank Wang", roles: [softwareTeam] },
-                { name: "Stephen Yuan", roles: [softwareTeam] },
-                { name: "Paige Bantz", roles: [buildTeam] },
-                { name: "Daksh Bhatnagar", roles: [buildTeam] },
-                { name: "Jaylen Hon", roles: [buildTeam] },
-                { name: "Will Li", roles: [buildTeam] },
-                { name: "William Man", roles: [buildTeam] },
-                { name: "Ian Nguyen", roles: [buildTeam] },
-                { name: "Aden Nunes", roles: [buildTeam] },
-                { name: "Aaron Sun", roles: [buildTeam] },
+            { name: "Maximus Ku", roles: [buildTeam] },
+            { name: "Tim Jung", roles: [buildTeam] },
+            { name: "Michael Hyodo", roles: [softwareTeam], badges: [parkingAuto] },
+            { name: "Tim Jung", roles: [softwareTeam], badges: [parkingAuto] },
+            { name: "Elizabeth Hyodo", roles: [businessTeam] },
+            { name: "Viraaj Gaggar", roles: [businessTeam] },
+            { name: "Alivia Hsu", roles: [businessTeam] },
+            { name: "Jason Luo", roles: [businessTeam] },
+            {
+                name: "Tiffany Yang",
+                roles: [businessTeam],
+                badges: [
+                    // portal: "Awards poster" (Oct 1)
+                    {
+                        icon: "palette",
+                        tone: "violet",
+                        title: "Poster Designer",
+                        description: "Designed our awards poster",
+                    },
+                ],
+            },
+            { name: "Felix Gu", roles: [softwareTeam] },
+            { name: "Jack Hu", roles: [softwareTeam], badges: [parkingAuto] },
+            { name: "Brandon Shu", roles: [softwareTeam], badges: [parkingAuto] },
+            { name: "Alice Wang", roles: [softwareTeam], badges: [parkingAuto] },
+            { name: "Frank Wang", roles: [softwareTeam], badges: [parkingAuto] },
+            { name: "Stephen Yuan", roles: [softwareTeam], badges: [parkingAuto] },
+            { name: "Paige Bantz", roles: [buildTeam], badges: [driveTrain] },
+            { name: "Daksh Bhatnagar", roles: [buildTeam] },
+            { name: "Jaylen Hon", roles: [buildTeam] },
+            { name: "Will Li", roles: [buildTeam] },
+            { name: "William Man", roles: [buildTeam] },
+            { name: "Ian Nguyen", roles: [buildTeam] },
+            { name: "Aden Nunes", roles: [buildTeam] },
+            { name: "Aaron Sun", roles: [buildTeam] },
         ],
     },
 ];
@@ -160,6 +244,13 @@ const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
 
 // Build log: photos in src/assets/images/people/ that match nobody here.
 warnUnusedPhotos(sections.flatMap((section) => section.people));
+
+// One card per person in each section (a name listed twice in a section is
+// one card with both positions and badges).
+const cardSections = sections.map(({ title, people }) => ({
+    title,
+    people: buildRoster([{ title, people }]),
+}));
 
 // Everyone once (a name listed twice is one person with both positions),
 // with the large photo for their profile dialog and where it came from.
@@ -172,6 +263,7 @@ const roster = await Promise.all(
             name: person.name,
             roles: person.roles,
             lead: person.lead,
+            badges: person.badges,
             photo: photo?.large ?? null,
             // "image" keeps its photo even when they have a portal photo.
             photoSource: photo?.source ?? null,
@@ -198,24 +290,44 @@ const headingId = (title: string) =>
             <header class="max-w-3xl">
                 <p
                     class="font-mono text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-base-content/65"
+                    data-edit-text="team.header.kicker"
+                    data-edit-label="Our Team: small line above the title"
                 >
                     FTC 19516 // The people
                 </p>
                 <h1
                     class="mt-2 font-jockey text-6xl leading-[0.9] uppercase sm:text-7xl lg:text-8xl"
                 >
-                    <span class="text-base-content">Our </span><span
-                        class="hud-title-accent">Team</span
+                    <span
+                        class="text-base-content"
+                        data-edit-text="team.header.title-start"
+                        data-edit-label="Our Team: title (white part)"
+                        >Our</span
+                    >{" "}<span
+                        class="hud-title-accent"
+                        data-edit-text="team.header.title-accent"
+                        data-edit-label="Our Team: title (green part)"
+                        >Team</span
                     >
                 </h1>
-                <p class="mt-5 text-base text-base-content/80 sm:text-lg">
+                <p
+                    class="mt-5 text-base text-base-content/80 sm:text-lg"
+                    data-edit-text="team.header.intro"
+                    data-edit-label="Our Team: intro text"
+                    data-edit-multiline
+                >
                     We are an FTC team from Fairmont Preparatory Academy, entering
                     our third year in the FIRST Tech Challenge. Combining business
                     and technical skills, our team thrives on collaboration and
                     innovation, driven by strong bonds and a shared commitment to
                     STEM excellence.
                 </p>
-                <p class="mt-4 text-base text-base-content/80 sm:text-lg">
+                <p
+                    class="mt-4 text-base text-base-content/80 sm:text-lg"
+                    data-edit-text="team.header.mission"
+                    data-edit-label="Our Team: mission text"
+                    data-edit-multiline
+                >
                     Fairmont Prep Robotics is dedicated to building a culture of teamwork
                     and creativity. Our mission is to inspire future STEM leaders, excel
                     in FIRST programs, and make a meaningful impact on our school and
@@ -226,7 +338,7 @@ const headingId = (title: string) =>
             <TeamLive portalUrl={portalUrl} roster={roster} client:load />
 
             {
-                sections.map(({ title, people }) => (
+                cardSections.map(({ title, people }) => (
                     <section
                         aria-labelledby={title ? headingId(title) : undefined}
                         class="mt-14"
@@ -236,6 +348,8 @@ const headingId = (title: string) =>
                                 <h2
                                     id={headingId(title)}
                                     class="font-jockey text-4xl uppercase text-base-content sm:text-5xl"
+                                    data-edit-text={`team.section.${slugify(title)}.title`}
+                                    data-edit-label={`Our Team: "${title}" heading`}
                                 >
                                     {title}
                                 </h2>
@@ -244,7 +358,13 @@ const headingId = (title: string) =>
                                     {people.length === 1 ? "person" : "people"}
                                     <span class="max-sm:hidden">
                                         {" "}
-                                        · select anyone for their profile
+                                        ·{" "}
+                                        <span
+                                            data-edit-text="team.section-hint"
+                                            data-edit-label="Our Team: hint next to the head count"
+                                        >
+                                            select anyone for their profile
+                                        </span>
                                     </span>
                                 </p>
                             </div>
@@ -254,7 +374,17 @@ const headingId = (title: string) =>
                                 // .toSorted((a, b) => compare(a.name, b.name))
                                 .map((person) => (
                                     <li>
-                                        <Person {...person} />
+                                        <Person
+                                            name={person.name}
+                                            roles={person.roles}
+                                            image={
+                                                person.entries.find((e) => e.image)
+                                                    ?.image
+                                            }
+                                            lead={person.lead}
+                                            badges={person.badges}
+                                            tone={person.tone}
+                                        />
                                     </li>
                                 ))}
                         </ul>

@@ -1,0 +1,606 @@
+---
+/**
+ * "Website Coding" runtime, included once by src/layouts/Layout.astro.
+ *
+ * 1. Applies the text, links and pictures admins saved in the Teammate Portal
+ *    (Admin -> Website Coding) to every element with data-edit-text,
+ *    data-edit-link or data-edit-image. What's written in the page is the
+ *    default; it stays when nothing is saved or the portal can't be reached.
+ * 2. Edit mode: when the portal shows the site in its editor
+ *    (<iframe src="…?hk-edit=1">), slots get an outline and a label on hover,
+ *    clicking one selects it in the portal, and the portal's unsaved changes
+ *    show live (postMessage, both sides check the other's origin).
+ *
+ * The pure helpers (validation, link safety) are in src/lib/site-content.ts.
+ */
+---
+
+<script>
+    import { PUBLIC_PORTAL_URL } from "astro:env/client";
+    import {
+        isSlotKey,
+        normalizeText,
+        own,
+        parseSiteContent,
+        portalBase,
+        portalOrigin,
+        siteContentUrl,
+        withEditParam,
+        type SiteContent,
+        type SlotKind,
+    } from "../../lib/site-content";
+
+    const SELECTOR = "[data-edit-text],[data-edit-link],[data-edit-image]";
+    const APPLIED = "data-edit-applied";
+    const DEFAULT_IMG_CLASS = "w-full h-full object-cover rounded-lg";
+    const FETCH_TIMEOUT_MS = 6000;
+
+    type Slot = { el: HTMLElement; kind: SlotKind; key: string };
+    type TextDefault = { kind: "text"; raw: string; nodes: Node[] | null };
+    type LinkDefault = { kind: "link"; href: string | null };
+    type ImgDefault = {
+        kind: "img";
+        attrs: Record<string, string | null>;
+    };
+    type BoxDefault = { kind: "box"; nodes: Node[]; src: string };
+    type Default = TextDefault | LinkDefault | ImgDefault | BoxDefault;
+
+    const IMG_ATTRS = ["src", "srcset", "sizes", "alt", "width", "height"];
+
+    const base = portalBase(PUBLIC_PORTAL_URL);
+    const origin = portalOrigin(PUBLIC_PORTAL_URL);
+    const allowedOrigins = new Set<string>();
+    if (origin) allowedOrigins.add(origin);
+    if (import.meta.env.DEV) allowedOrigins.add("http://localhost:3000");
+
+    let editMode = false;
+    try {
+        editMode =
+            new URLSearchParams(location.search).get("hk-edit") === "1" &&
+            window.parent !== window;
+    } catch {
+        editMode = false;
+    }
+
+    const defaults = new WeakMap<HTMLElement, Default>();
+    let content: SiteContent | null = null;
+    let previewing = false;
+
+    function slotOf(el: HTMLElement): Slot | null {
+        const text = el.getAttribute("data-edit-text");
+        if (text !== null)
+            return isSlotKey(text) ? { el, kind: "text", key: text } : null;
+        const link = el.getAttribute("data-edit-link");
+        if (link !== null)
+            return isSlotKey(link) ? { el, kind: "link", key: link } : null;
+        const image = el.getAttribute("data-edit-image");
+        if (image !== null)
+            return isSlotKey(image) ? { el, kind: "image", key: image } : null;
+        return null;
+    }
+
+    function allSlots(): Slot[] {
+        const out: Slot[] = [];
+        document.querySelectorAll<HTMLElement>(SELECTOR).forEach((el) => {
+            const slot = slotOf(el);
+            if (slot) out.push(slot);
+        });
+        return out;
+    }
+
+    /**
+     * Inside a React island that hasn't hydrated yet, changing the DOM would
+     * make React's hydration complain: wait until it has (the island drops
+     * its `ssr` attribute, which the observer watches). Static children of an
+     * island (<astro-slot>) are never touched by React.
+     */
+    function blocked(el: HTMLElement): boolean {
+        const island = el.closest("astro-island");
+        if (!island || !island.hasAttribute("ssr")) return false;
+        const slot = el.closest("astro-slot, astro-static-slot");
+        return !(slot && island.contains(slot));
+    }
+
+    const cloneChildren = (el: Element) =>
+        Array.from(el.childNodes, (n) => n.cloneNode(true));
+
+    function remember(slot: Slot): Default {
+        const known = defaults.get(slot.el);
+        if (known) return known;
+        const { el } = slot;
+        let d: Default;
+        if (slot.kind === "text") {
+            d = {
+                kind: "text",
+                raw: el.textContent ?? "",
+                nodes: el.children.length ? cloneChildren(el) : null,
+            };
+        } else if (slot.kind === "link") {
+            d = { kind: "link", href: el.getAttribute("href") };
+        } else if (el instanceof HTMLImageElement) {
+            const attrs: Record<string, string | null> = {};
+            for (const a of IMG_ATTRS) attrs[a] = el.getAttribute(a);
+            d = { kind: "img", attrs };
+        } else {
+            const img = el.querySelector("img");
+            d = {
+                kind: "box",
+                nodes: cloneChildren(el),
+                src: img?.getAttribute("src") ?? "",
+            };
+        }
+        defaults.set(el, d);
+        return d;
+    }
+
+    function defaultValue(d: Default): string {
+        switch (d.kind) {
+            case "text":
+                // Line breaks in the page's source are only formatting.
+                return normalizeText(d.raw);
+            case "link":
+                return d.href ?? "";
+            case "img":
+                return d.attrs.src ?? "";
+            case "box":
+                return d.src;
+        }
+    }
+
+    function setText(el: HTMLElement, value: string) {
+        const only = el.childNodes.length === 1 ? el.firstChild : null;
+        // Keep the text node when there's just one (React keeps a reference to it).
+        if (only && only.nodeType === Node.TEXT_NODE) only.nodeValue = value;
+        else el.textContent = value;
+    }
+
+    function applyText(slot: Slot, d: TextDefault, value: string | undefined) {
+        const { el } = slot;
+        if (value === undefined) {
+            if (!el.hasAttribute(APPLIED)) return;
+            if (d.nodes) el.replaceChildren(...d.nodes.map((n) => n.cloneNode(true)));
+            else if (el.textContent !== d.raw) setText(el, d.raw);
+            el.removeAttribute(APPLIED);
+            return;
+        }
+        if (el.textContent !== value) setText(el, value);
+        if (!el.hasAttribute(APPLIED)) el.setAttribute(APPLIED, "");
+    }
+
+    function applyLink(slot: Slot, d: LinkDefault, value: string | undefined) {
+        const { el } = slot;
+        const want = value ?? d.href;
+        if (want === null) el.removeAttribute("href");
+        else if (el.getAttribute("href") !== want) el.setAttribute("href", want);
+        if (value === undefined) el.removeAttribute(APPLIED);
+        else if (!el.hasAttribute(APPLIED)) el.setAttribute(APPLIED, "");
+    }
+
+    function setAttr(el: Element, name: string, value: string | null) {
+        if (value === null) {
+            if (el.hasAttribute(name)) el.removeAttribute(name);
+        } else if (el.getAttribute(name) !== value) el.setAttribute(name, value);
+    }
+
+    function applyImg(
+        el: HTMLElement,
+        d: ImgDefault,
+        image: SiteContent["images"][string] | undefined,
+    ) {
+        if (!image) {
+            if (!el.hasAttribute(APPLIED)) return;
+            for (const a of IMG_ATTRS) setAttr(el, a, d.attrs[a]);
+            el.removeAttribute(APPLIED);
+            return;
+        }
+        setAttr(el, "srcset", null);
+        setAttr(el, "sizes", null);
+        setAttr(el, "src", image.src);
+        setAttr(el, "alt", image.alt);
+        setAttr(el, "width", image.width ? String(image.width) : null);
+        setAttr(el, "height", image.height ? String(image.height) : null);
+        if (!el.hasAttribute(APPLIED)) el.setAttribute(APPLIED, "");
+    }
+
+    function applyBox(
+        el: HTMLElement,
+        d: BoxDefault,
+        image: SiteContent["images"][string] | undefined,
+    ) {
+        if (!image) {
+            if (!el.hasAttribute(APPLIED)) return;
+            el.replaceChildren(...d.nodes.map((n) => n.cloneNode(true)));
+            el.removeAttribute(APPLIED);
+            return;
+        }
+        const current = el.children.length === 1 ? el.firstElementChild : null;
+        if (
+            current instanceof HTMLImageElement &&
+            current.hasAttribute("data-edit-img") &&
+            el.childNodes.length === 1
+        ) {
+            setAttr(current, "src", image.src);
+            setAttr(current, "alt", image.alt);
+        } else {
+            const img = document.createElement("img");
+            img.setAttribute("data-edit-img", "");
+            img.className =
+                el.getAttribute("data-edit-img-class") ?? DEFAULT_IMG_CLASS;
+            img.src = image.src;
+            img.alt = image.alt;
+            img.loading = "lazy";
+            img.decoding = "async";
+            if (image.width && image.height) {
+                img.width = image.width;
+                img.height = image.height;
+            }
+            el.replaceChildren(img);
+        }
+        if (!el.hasAttribute(APPLIED)) el.setAttribute(APPLIED, "");
+    }
+
+    /** Elements marked data-edit-optional show only when they have something to show (or in the editor). */
+    function syncOptional() {
+        document
+            .querySelectorAll<HTMLElement>("[data-edit-optional]")
+            .forEach((el) => {
+                let show = editMode;
+                if (!show) {
+                    const slots = el.matches(SELECTOR)
+                        ? [el, ...el.querySelectorAll<HTMLElement>(SELECTOR)]
+                        : Array.from(el.querySelectorAll<HTMLElement>(SELECTOR));
+                    show = slots.some((s) =>
+                        s.hasAttribute("data-edit-image")
+                            ? s.hasAttribute(APPLIED)
+                            : s.hasAttribute("data-edit-text") &&
+                              (s.textContent ?? "").trim() !== "",
+                    );
+                }
+                if (el.hidden === show) el.hidden = !show;
+            });
+    }
+
+    function applyAll() {
+        const c = content;
+        for (const slot of allSlots()) {
+            if (blocked(slot.el)) continue;
+            const d = remember(slot);
+            if (!c && !editMode) continue;
+            switch (d.kind) {
+                case "text":
+                    applyText(slot, d, own(c?.texts, slot.key));
+                    break;
+                case "link":
+                    applyLink(slot, d, own(c?.links, slot.key));
+                    break;
+                case "img":
+                    applyImg(slot.el, d, own(c?.images, slot.key));
+                    break;
+                case "box":
+                    applyBox(slot.el, d, own(c?.images, slot.key));
+                    if (editMode) {
+                        const empty =
+                            !slot.el.hasAttribute(APPLIED) &&
+                            !slot.el.querySelector("img,video");
+                        if (slot.el.hasAttribute("data-hk-empty") !== empty)
+                            slot.el.toggleAttribute("data-hk-empty", empty);
+                    }
+                    break;
+            }
+            if (editMode && selected === slot.key && !slot.el.hasAttribute("data-hk-selected"))
+                slot.el.setAttribute("data-hk-selected", "");
+        }
+        syncOptional();
+        if (editMode) announceSoon();
+    }
+
+    // ---- Keeping it applied (React islands can re-render) -----------------
+
+    let scheduled = false;
+    let passes = 0;
+    let windowStart = 0;
+    let observer: MutationObserver | null = null;
+
+    function schedule() {
+        if (scheduled) return;
+        scheduled = true;
+        // setTimeout, not requestAnimationFrame: rAF pauses in hidden tabs and iframes.
+        window.setTimeout(() => {
+            scheduled = false;
+            // A runaway loop (something fighting us) stops after 60 passes a second.
+            const now = performance.now();
+            if (now - windowStart > 1000) {
+                windowStart = now;
+                passes = 0;
+            }
+            if (++passes > 60) return;
+            try {
+                applyAll();
+            } catch {
+                /* never break the page */
+            }
+        }, 16);
+    }
+
+    function isEditorNode(n: Node | null): boolean {
+        const el = n instanceof Element ? n : n?.parentElement;
+        return !!el?.closest?.("[data-hk-editor]");
+    }
+
+    function observe() {
+        if (observer || !("MutationObserver" in window)) return;
+        observer = new MutationObserver((records) => {
+            if (records.every((r) => isEditorNode(r.target))) return;
+            schedule();
+        });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true,
+            attributeFilter: ["ssr"],
+        });
+    }
+
+    // ---- Feed --------------------------------------------------------------
+
+    async function load() {
+        if (!base) return;
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
+        try {
+            const res = await fetch(siteContentUrl(base), {
+                mode: "cors",
+                credentials: "omit",
+                signal: ctrl.signal,
+            });
+            if (!res.ok) return;
+            const parsed = parseSiteContent(await res.json(), base);
+            // The editor's live preview wins over the (cached) feed.
+            if (parsed && !previewing) {
+                content = parsed;
+                schedule();
+            }
+        } catch {
+            /* portal down or offline: the built-in content stays */
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    // ---- Edit mode ---------------------------------------------------------
+
+    function post(message: Record<string, unknown>) {
+        for (const target of allowedOrigins) {
+            try {
+                window.parent.postMessage({ source: "hk-site", ...message }, target);
+            } catch {
+                /* ignore */
+            }
+        }
+    }
+
+    let lastAnnounced = "";
+    let announceTimer = 0;
+    function announceSoon() {
+        clearTimeout(announceTimer);
+        announceTimer = window.setTimeout(announce, 150);
+    }
+
+    function announce() {
+        const seen = new Map<string, Record<string, unknown>>();
+        for (const slot of allSlots()) {
+            if (seen.has(slot.key)) continue;
+            const d = defaults.get(slot.el);
+            if (!d) continue;
+            seen.set(slot.key, {
+                key: slot.key,
+                kind: slot.kind,
+                label:
+                    normalizeText(slot.el.getAttribute("data-edit-label") ?? "") ||
+                    slot.key,
+                defaultValue: defaultValue(d),
+                multiline: slot.el.hasAttribute("data-edit-multiline"),
+            });
+        }
+        const slots = [...seen.values()];
+        const signature = slots.map((s) => s.key).join("|");
+        if (signature === lastAnnounced) return;
+        lastAnnounced = signature;
+        post({
+            type: "ready",
+            path: location.pathname,
+            title: document.title,
+            slots,
+        });
+    }
+
+    let chip: HTMLElement | null = null;
+    let hovered: HTMLElement | null = null;
+    let selected: string | null = null;
+
+    function nearestSlot(target: EventTarget | null): HTMLElement | null {
+        const el = target instanceof Element ? target : null;
+        const found = el?.closest<HTMLElement>(SELECTOR) ?? null;
+        return found && !isEditorNode(found) && slotOf(found) ? found : null;
+    }
+
+    function labelOf(el: HTMLElement): string {
+        const slot = slotOf(el);
+        const label = normalizeText(el.getAttribute("data-edit-label") ?? "");
+        const kind =
+            slot?.kind === "image" ? "Photo" : slot?.kind === "link" ? "Link" : "Text";
+        return `${kind}: ${label || slot?.key || ""}`;
+    }
+
+    function placeChip() {
+        if (!chip) return;
+        if (!hovered) {
+            chip.hidden = true;
+            return;
+        }
+        const r = hovered.getBoundingClientRect();
+        chip.textContent = labelOf(hovered);
+        chip.hidden = false;
+        const top = r.top > 26 ? r.top - 24 : r.bottom + 4;
+        chip.style.top = `${Math.max(0, Math.min(top, innerHeight - 24))}px`;
+        chip.style.left = `${Math.max(4, Math.min(r.left, innerWidth - chip.offsetWidth - 4))}px`;
+    }
+
+    function setHovered(el: HTMLElement | null) {
+        if (hovered === el) return;
+        hovered?.removeAttribute("data-hk-hover");
+        hovered = el;
+        hovered?.setAttribute("data-hk-hover", "");
+        placeChip();
+    }
+
+    function markSelected(key: string | null) {
+        selected = key;
+        document
+            .querySelectorAll<HTMLElement>("[data-hk-selected]")
+            .forEach((el) => el.removeAttribute("data-hk-selected"));
+        if (!key) return;
+        for (const slot of allSlots()) {
+            if (slot.key === key) slot.el.setAttribute("data-hk-selected", "");
+        }
+    }
+
+    const visible = (el: HTMLElement) => el.getClientRects().length > 0;
+
+    function highlight(key: string) {
+        const els = allSlots()
+            .filter((s) => s.key === key)
+            .map((s) => s.el);
+        markSelected(key);
+        const target = els.find(visible) ?? els[0];
+        if (!target) return;
+        // A slot inside a closed <details> (the menus) opens it.
+        let details = target.closest("details");
+        while (details) {
+            details.open = true;
+            details = details.parentElement?.closest("details") ?? null;
+        }
+        const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        target.scrollIntoView({
+            block: "center",
+            behavior: reduce ? "auto" : "smooth",
+        });
+        for (const el of els) {
+            el.removeAttribute("data-hk-flash");
+            void el.offsetWidth; // restart the animation
+            el.setAttribute("data-hk-flash", "");
+            window.setTimeout(() => el.removeAttribute("data-hk-flash"), 1600);
+        }
+    }
+
+    function onMessage(event: MessageEvent) {
+        if (!allowedOrigins.has(event.origin)) return;
+        if (event.source !== window.parent) return;
+        const data = event.data as unknown;
+        if (typeof data !== "object" || data === null) return;
+        const msg = data as Record<string, unknown>;
+        if (msg.source !== "hk-portal") return;
+        if (msg.type === "preview") {
+            // Pictures live on the portal that sent the preview (already checked against allowedOrigins).
+            const parsed = parseSiteContent(msg, event.origin, {
+                allowAbsolute: true,
+                requireEnabled: false,
+            });
+            if (!parsed) return;
+            previewing = true;
+            content = parsed;
+            schedule();
+        } else if (msg.type === "highlight" && isSlotKey(msg.key)) {
+            highlight(msg.key);
+        }
+    }
+
+    function onClick(event: MouseEvent) {
+        if (isEditorNode(event.target as Node)) return;
+        // Alt/Option-click follows a link that's also a slot.
+        const slot = event.altKey ? null : nearestSlot(event.target);
+        if (slot) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            const key = slotOf(slot)?.key;
+            if (key) {
+                markSelected(key);
+                post({ type: "select", key });
+            }
+            return;
+        }
+        // Ordinary same-origin links keep the editor on.
+        const a = (event.target as Element | null)?.closest?.("a[href]");
+        if (!(a instanceof HTMLAnchorElement)) return;
+        let url: URL;
+        try {
+            url = new URL(a.href, location.href);
+        } catch {
+            return;
+        }
+        if (url.origin !== location.origin) return;
+        if (url.searchParams.get("hk-edit") === "1") return;
+        const next = withEditParam(url.href, location.href);
+        if (next) a.setAttribute("href", next);
+    }
+
+    const EDITOR_CSS = `
+[data-edit-text],[data-edit-link],[data-edit-image]{cursor:pointer}
+[data-hk-hover]{outline:2px dashed #22c55e!important;outline-offset:2px}
+[data-hk-selected]{outline:2px solid #16a34a!important;outline-offset:2px}
+[data-hk-flash]{animation:hk-flash 1.5s ease-out}
+@keyframes hk-flash{0%,40%{box-shadow:0 0 0 6px rgba(34,197,94,.55)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+[data-edit-text]:empty::before{content:"(empty, click to edit)";opacity:.55;font-style:italic}
+[data-edit-image][data-hk-empty]{position:relative}
+[data-edit-image][data-hk-empty]::after{content:"Click to add a photo";position:absolute;left:50%;bottom:10px;transform:translateX(-50%);padding:3px 10px;border-radius:999px;background:#16a34a;color:#fff;font:600 12px/1.4 system-ui,sans-serif;white-space:nowrap;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+[data-hk-editor]{position:fixed;z-index:2147483647;pointer-events:none;max-width:min(360px,90vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 8px;border-radius:6px;background:#16a34a;color:#fff;font:600 12px/1.5 system-ui,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+`;
+
+    function startEditor() {
+        const style = document.createElement("style");
+        style.setAttribute("data-hk-editor", "");
+        style.textContent = EDITOR_CSS;
+        document.head.append(style);
+        chip = document.createElement("div");
+        chip.setAttribute("data-hk-editor", "");
+        chip.setAttribute("aria-hidden", "true");
+        chip.hidden = true;
+        document.body.append(chip);
+
+        window.addEventListener("message", onMessage);
+        window.addEventListener("click", onClick, true);
+        document.addEventListener("mouseover", (e) => setHovered(nearestSlot(e.target)));
+        document.documentElement.addEventListener("mouseleave", () =>
+            setHovered(null),
+        );
+        window.addEventListener("scroll", placeChip, { passive: true, capture: true });
+        window.addEventListener("resize", placeChip, { passive: true });
+        // Submitting a form would leave the editor: don't.
+        window.addEventListener(
+            "submit",
+            (e) => {
+                e.preventDefault();
+            },
+            true,
+        );
+    }
+
+    function start() {
+        try {
+            if (editMode) startEditor();
+            applyAll();
+            observe();
+            if (editMode) announce();
+            void load();
+        } catch {
+            /* never break the page */
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", start, { once: true });
+    } else {
+        start();
+    }
+</script>

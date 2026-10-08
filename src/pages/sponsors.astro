@@ -24,6 +24,8 @@ const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <p
                     class="font-mono text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-base-content/65"
+                    data-edit-text="sponsors.header.kicker"
+                    data-edit-label="Sponsors: small line above the title"
                 >
                     FTC 19516 // With gratitude
                 </p>
@@ -31,12 +33,23 @@ const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
                     id="sponsors-title"
                     class="mt-2 font-jockey text-6xl leading-[0.9] uppercase sm:text-7xl lg:text-8xl"
                 >
-                    <span class="text-base-content">Our </span><span
-                        class="hud-title-accent">Sponsors</span
+                    <span
+                        class="text-base-content"
+                        data-edit-text="sponsors.header.title-start"
+                        data-edit-label="Sponsors: title (white part)"
+                        >Our</span
+                    >{" "}<span
+                        class="hud-title-accent"
+                        data-edit-text="sponsors.header.title-accent"
+                        data-edit-label="Sponsors: title (green part)"
+                        >Sponsors</span
                     >
                 </h1>
                 <p
                     class="mt-4 max-w-2xl text-base text-base-content/75 sm:text-lg"
+                    data-edit-text="sponsors.header.intro"
+                    data-edit-label="Sponsors: thank-you text"
+                    data-edit-multiline
                 >
                     Thank you to every company and family who supports the
                     Huskyteers. You build our robots, get us to competitions
@@ -48,12 +61,26 @@ const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
         <div
             class="container mx-auto px-3 grid grid-cols-1 md:grid-cols-2 place-items-center text-center"
         >
-            <img src={RobotOutlined.src} alt="Robot" class="w-full max-w-md" />
+            <img
+                src={RobotOutlined.src}
+                alt="Robot"
+                class="w-full max-w-md"
+                data-edit-image="sponsors.robot-image"
+                data-edit-label="Sponsors: robot picture"
+            />
             <div class="max-w-xl mt-8">
-                <h2 class="mt-5 text-center text-3xl font-semibold">
+                <h2
+                    class="mt-5 text-center text-3xl font-semibold"
+                    data-edit-text="sponsors.ask.title"
+                    data-edit-label="Sponsors: Sponsor Us heading"
+                >
                     Sponsor Us
                 </h2>
-                <p>
+                <p
+                    data-edit-text="sponsors.ask.text"
+                    data-edit-label="Sponsors: why sponsor us text"
+                    data-edit-multiline
+                >
                     We rely on the gracious contributions of our sponsors to
                     help our team afford the costs of constructing our robots
                     and attending competitions, and we are very grateful for any
@@ -61,7 +88,11 @@ const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
                     consideration!
                 </p>
                 <br />
-                <p>
+                <p
+                    data-edit-text="sponsors.ask.cta-text"
+                    data-edit-label="Sponsors: text above the button"
+                    data-edit-multiline
+                >
                     If you are interested in sponsoring our team, please click
                     the button below.
                 </p>
@@ -71,8 +102,15 @@ const portalUrl = PUBLIC_PORTAL_URL.replace(/\/+$/, "");
                         target="_blank"
                         rel="noreferrer"
                         class="flex items-center gap-2"
+                        data-edit-link="sponsors.form.link"
+                        data-edit-label="Sponsors: sponsorship form link (Google Form)"
                     >
-                        Sponsor Us <ArrowUpRight />
+                        <span
+                            data-edit-text="sponsors.form.button"
+                            data-edit-label="Sponsors: button text"
+                            >Sponsor Us</span
+                        >
+                        <ArrowUpRight />
                     </a>
                 </div>
             </div>

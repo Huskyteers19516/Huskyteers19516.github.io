@@ -36,7 +36,7 @@ export interface PhotoSet {
     height: number;
 }
 
-/** Card size (shown at up to 112 px) and dialog size (up to 224 px). */
+/** Card size (shown at up to 136 px) and dialog size (up to 224 px). */
 export interface PersonPhoto {
     card: PhotoSet;
     large: PhotoSet;
@@ -61,6 +61,9 @@ const fsPathOf = (image: ImageMetadata): string | undefined => {
     const p = (image as { fsPath?: unknown }).fsPath;
     return typeof p === "string" ? p : undefined;
 };
+
+/** Card photo size in px (the frame is 8.5rem = 136 px at most). */
+const CARD_SIZE = 144;
 
 async function square(src: ImageMetadata, size: number): Promise<PhotoSet> {
     const img = await getImage({
@@ -108,7 +111,7 @@ export function resolvePhoto(
 async function load(name: string, image: PhotoInput): Promise<PersonPhoto | null> {
     if (isImageMetadata(image)) {
         return {
-            card: await square(image, 112),
+            card: await square(image, CARD_SIZE),
             large: await square(image, 224),
             source: "image",
         };
@@ -126,13 +129,13 @@ async function load(name: string, image: PhotoInput): Promise<PersonPhoto | null
     const source = fromImage ? "image" : "folder";
     if (choice?.kind === "url") {
         const set = { src: choice.url, srcSet: "", width: 224, height: 224 };
-        return { card: { ...set, width: 112, height: 112 }, large: set, source };
+        return { card: { ...set, width: CARD_SIZE, height: CARD_SIZE }, large: set, source };
     }
     if (!choice) return null;
     const meta = FILES[choice.path]?.default;
     if (!meta) return null;
     return {
-        card: await square(meta, 112),
+        card: await square(meta, CARD_SIZE),
         large: await square(meta, 224),
         source,
     };

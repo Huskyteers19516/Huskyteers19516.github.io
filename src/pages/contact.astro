@@ -1,32 +1,108 @@
 ---
+import { Image } from "astro:assets";
+import { Instagram, Discord } from "simple-icons-astro";
+import Mail from "@lucide/astro/icons/mail";
+import ArrowUpRight from "@lucide/astro/icons/arrow-up-right";
 import Layout from "../layouts/Layout.astro";
+import TeamImage from "../assets/images/2024-2025/team.png";
+
+const email = "fpahuskyteers19516@gmail.com";
+
+const cards = [
+    {
+        key: "instagram",
+        title: "Follow us on Instagram",
+        description:
+            "See what we're building, competition recaps and outreach events.",
+        href: "https://www.instagram.com/ftc19516/",
+        cta: "@ftc19516",
+        icon: Instagram,
+        external: true,
+    },
+    {
+        key: "discord",
+        title: "Join our Discord",
+        description:
+            "Hang out with the Huskyteers community, ask questions and chat about FTC.",
+        href: "https://discord.gg/9a7y4MpE6",
+        cta: "Join the server",
+        icon: Discord,
+        external: true,
+    },
+    {
+        key: "email",
+        title: "Email Us",
+        description:
+            "Questions, comments or sponsorship inquiries? We'd love to hear from you.",
+        href: `mailto:${email}`,
+        cta: email,
+        icon: Mail,
+        external: false,
+    },
+];
 ---
 
 <Layout>
     <main
-        class="flex flex-col items-center pt-8 w-full min-h-screen container mx-auto mb-10 text-center"
+        class="flex flex-col items-center pt-8 w-full min-h-screen container mx-auto mb-10 px-4 text-center"
     >
-        <h1 class="font-bold text-4xl mb-5">Contact Us</h1>
+        <h1
+            class="font-bold text-4xl mb-5"
+            data-edit-text="contact.title"
+            data-edit-label="Contact: page title"
+        >
+            Contact Us
+        </h1>
 
-        <div class="px-4 w-full grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6627.54389538572!2d-117.96015539999999!3d33.8439914!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80dd298f706c9397%3A0x675392d3c5324815!2sFairmont%20Preparatory%20Academy!5e0!3m2!1sen!2sus!4v1757708431178!5m2!1sen!2sus"
-                width="600"
-                height="450"
-                class="border-0"
-                allow-full-screen={false}
-                loading="lazy"
-                referrer-policy="no-referrer-when-downgrade"></iframe>
-            <p class="pt-5">
-                To contact The Huskyteers 19516, please email{" "}
-                <a
-                    href="mailto:fpahuskyteers19516@gmail.com"
-                    class="underline text-primary"
-                >
-                    fpahuskyteers19516@gmail.com
-                </a>{" "}
-                with any comments or questions.
-            </p>
+        <Image
+            src={TeamImage}
+            alt="The Huskyteers 19516 team"
+            class="w-full max-w-5xl h-auto rounded-xl shadow-lg"
+            data-edit-image="contact.team-photo"
+            data-edit-label="Contact: team photo"
+        />
+
+        <div class="w-full max-w-5xl mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            {
+                cards.map(({ key, title, description, href, cta, icon: Icon, external }) => (
+                    <a
+                        href={href}
+                        data-edit-link={`contact.${key}.link`}
+                        data-edit-label={`Contact: ${title} (link)`}
+                        target={external ? "_blank" : undefined}
+                        rel={external ? "noopener noreferrer" : undefined}
+                        class="card bg-base-200 border border-base-content/10 transition hover:-translate-y-1 hover:border-primary hover:shadow-lg"
+                    >
+                        <div class="card-body items-center text-center">
+                            <Icon size={36} class="text-primary" />
+                            <h2
+                                class="card-title mt-2"
+                                data-edit-text={`contact.${key}.title`}
+                                data-edit-label={`Contact: ${title} (title)`}
+                            >
+                                {title}
+                            </h2>
+                            <p
+                                class="text-base-content/75"
+                                data-edit-text={`contact.${key}.text`}
+                                data-edit-label={`Contact: ${title} (text)`}
+                                data-edit-multiline
+                            >
+                                {description}
+                            </p>
+                            <span class="mt-2 inline-flex items-center gap-1 font-medium text-primary break-all">
+                                <span
+                                    data-edit-text={`contact.${key}.cta`}
+                                    data-edit-label={`Contact: ${title} (button text)`}
+                                >
+                                    {cta}
+                                </span>
+                                {external && <ArrowUpRight size={16} />}
+                            </span>
+                        </div>
+                    </a>
+                ))
+            }
         </div>
     </main>
 </Layout>
