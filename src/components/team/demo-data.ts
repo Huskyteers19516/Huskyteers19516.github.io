@@ -13,7 +13,7 @@
  * (the first person hides themselves after ~20 s: gone from the feed, their
  * profile 404s — an open profile must drop their numbers and list).
  * A few people on the page aren't in the mock portal (no live numbers), and
- * one portal person isn't on the page: /about/team?person=avery-lin&demo=1.
+ * one portal person isn't on the page: /about/team?person=avery-l&demo=1.
  *
  * Like the portal, every number comes from the same list of finished items:
  * `doneLast7Days`, `lastDoneAt`, `weekly` and `done` agree, and the weeks

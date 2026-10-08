@@ -67,6 +67,29 @@ export function slugify(name: string): string {
         .slice(0, 80);
 }
 
+/**
+ * How a teammate's name is shown on the site: first name(s) plus last
+ * initial ("Tommy Ho" -> "Tommy H."), so full last names aren't published.
+ * One-word names stay as they are.
+ */
+export function shortName(name: string): string {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length < 2) return parts[0] ?? "";
+    const last = parts[parts.length - 1];
+    const initial = Array.from(last)[0]?.toLocaleUpperCase("en-US") ?? "";
+    return `${parts.slice(0, -1).join(" ")} ${initial}.`;
+}
+
+/**
+ * A person's public id: the slug of their short name ("Tommy Ho" ->
+ * "tommy-h"). Used in ?person= links, on the cards, and as the name of their
+ * photo file (src/assets/images/people/tommy-h.png), so no full last name
+ * ends up in a URL or a file name on the site.
+ */
+export function personSlug(name: string): string {
+    return slugify(shortName(name));
+}
+
 /** The first word of a name ("Tommy" for "Tommy Ho"), for short copy. */
 export function firstName(name: string): string {
     return name.trim().split(/\s+/)[0] ?? name;
@@ -79,7 +102,7 @@ export function firstName(name: string): string {
 /** Photo types picked up from src/assets/images/people/ (any letter case). */
 export const PHOTO_EXTENSIONS = ["webp", "jpg", "jpeg", "png"] as const;
 
-/** "…/people/Tommy Ho.JPG" -> { file: "Tommy Ho.JPG", slug: "tommy-ho" }, null for other types. */
+/** "…/people/Tommy H.JPG" -> { file: "Tommy H.JPG", slug: "tommy-h" }, null for other types. */
 export function photoFileInfo(
     path: string,
 ): { file: string; slug: string; ext: string } | null {
@@ -114,9 +137,10 @@ const byExtension = (a: string, b: string) => {
  * 1. `image` names a file in that folder ("ethan.png", "people/ethan.png",
  *    or just "ethan") -> that file.
  * 2. `image` is a link ("/images/x.jpg" in public/, "https://…") -> as is.
- * 3. Otherwise (or when step 1 finds nothing): a file named after the person,
- *    e.g. "tommy-ho.jpg" for Tommy Ho. The file's name goes through the same
- *    slug rules, so "Tommy Ho.jpg" or "tommy_ho.PNG" work too.
+ * 3. Otherwise (or when step 1 finds nothing): a file named after the person's
+ *    short name (`personSlug`), e.g. "tommy-h.jpg" for Tommy Ho. The file's
+ *    name goes through the same slug rules, so "Tommy H.jpg" or "tommy_h.PNG"
+ *    work too. A file with the full name ("tommy-ho.jpg") matches nobody.
  * 4. Nothing: the card shows the person's initials.
  *
  * Only exact name matches count: "ethan.png" is nobody's automatic photo
@@ -181,7 +205,7 @@ export function photoForName(
     name: string,
     files: readonly string[],
 ): PhotoChoice {
-    const slug = slugify(name);
+    const slug = personSlug(name);
     if (!slug) return null;
     const own = files
         .filter((f) => photoFileInfo(f)?.slug === slug)
@@ -217,8 +241,10 @@ export const isLeadRole = (roles: readonly string[], section = "") =>
 
 /**
  * Everyone on the page, once each, in page order. Entries with the same name
- * (same slug) are merged: "Tim Jung" listed under Build Team and Software
- * Team is one person with both positions (and both entries' badges).
+ * are merged: "Tim Jung" listed under Build Team and Software Team is one
+ * person with both positions (and both entries' badges). Two different names
+ * with the same short name ("Jack Luo" and "Jack Lee" are both "Jack L.")
+ * would share a link and a photo, so that stops the build with a message.
  */
 export function buildRoster<M extends TeamMember>(
     sections: readonly TeamSection<M>[],
@@ -226,9 +252,16 @@ export function buildRoster<M extends TeamMember>(
     const bySlug = new Map<string, RosterPerson<M>>();
     for (const section of sections) {
         for (const member of section.people) {
-            const slug = slugify(member.name);
+            const slug = personSlug(member.name);
             if (!slug) continue;
             let person = bySlug.get(slug);
+            if (person && normalizeName(person.name) !== normalizeName(member.name)) {
+                throw new Error(
+                    `Our Team: "${person.name}" and "${member.name}" are both shown as ` +
+                        `"${shortName(member.name)}". Write one of them differently in ` +
+                        `src/pages/about/team.astro (e.g. add a middle initial).`,
+                );
+            }
             if (!person) {
                 person = {
                     slug,
@@ -284,24 +317,29 @@ export function subteamsFromRoles(roles: readonly string[]): string[] {
 /**
  * Live progress for each roster slug. A person matches when their name
  * equals a `people[].name` of the public progress JSON, ignoring case,
- * spacing and accents. That only works while the portal writes full names
+ * spacing and accents. The page doesn't hand full names to the browser:
+ * each roster entry carries `key`, its full name already turned into a key
+ * by `keyOf` (the browser uses `teamPhotoKey`, a hash; tests can use
+ * `normalizeName`), and each portal name goes through the same `keyOf`. That only works while the portal writes full names
  * (Admin -> Team website -> name style "full", the default); with
  * initials or hidden names nobody matches and the cards simply show no live
  * numbers. Two portal people with the same name match nobody (never show
  * someone else's numbers).
  */
 export function matchLive(
-    roster: readonly { slug: string; name: string }[],
+    roster: readonly { slug: string; key: string | null }[],
     people: readonly ProgressPerson[],
+    keyOf: (name: string) => string | null = normalizeName,
 ): Map<string, ProgressPerson> {
-    const byName = new Map<string, ProgressPerson | null>();
+    const byKey = new Map<string, ProgressPerson | null>();
     for (const p of people) {
-        const key = normalizeName(p.name);
-        byName.set(key, byName.has(key) ? null : p);
+        const key = keyOf(p.name);
+        if (!key) continue;
+        byKey.set(key, byKey.has(key) ? null : p);
     }
     const out = new Map<string, ProgressPerson>();
     for (const r of roster) {
-        const p = byName.get(normalizeName(r.name));
+        const p = r.key ? byKey.get(r.key) : undefined;
         if (p) out.set(r.slug, p);
     }
     return out;
@@ -329,7 +367,7 @@ export function liveBySlug(
     slug: string,
     people: readonly ProgressPerson[],
 ): ProgressPerson | null {
-    const hits = people.filter((p) => slugify(p.name) === slug);
+    const hits = people.filter((p) => personSlug(p.name) === slug);
     return hits.length === 1 && !looksAbbreviated(hits[0].name)
         ? hits[0]
         : null;
@@ -347,12 +385,12 @@ export function profileLinks(
 ): Map<string, string> {
     const count = new Map<string, number>();
     for (const p of people) {
-        const slug = slugify(p.name);
+        const slug = personSlug(p.name);
         count.set(slug, (count.get(slug) ?? 0) + 1);
     }
     const out = new Map<string, string>();
     for (const p of people) {
-        const slug = slugify(p.name);
+        const slug = personSlug(p.name);
         if (slug && count.get(slug) === 1 && !looksAbbreviated(p.name)) {
             out.set(p.id, slug);
         }
@@ -384,7 +422,7 @@ export function withPersonParam(href: string, slug: string | null): string {
 
 /** Link to someone's profile on the Our Team page (used by /progress). */
 export function teamProfileHref(name: string, extraQuery = ""): string {
-    const slug = slugify(name);
+    const slug = personSlug(name);
     const base = "/about/team";
     if (!slug) return base;
     return `${base}?${PERSON_PARAM}=${encodeURIComponent(slug)}${extraQuery ? `&${extraQuery}` : ""}`;

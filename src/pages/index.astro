@@ -7,6 +7,7 @@ import TimelineEntry from "../components/timeline-entry";
 import Layout from "../layouts/Layout.astro";
 import CenterstageTeam from "../assets/images/2023-2024/team.png";
 import CenterstageRobot from "../assets/images/2023-2024/robot.jpg";
+import DecodeTeam from "../assets/images/2025-2026/team.jpg";
 import IntoTheDeepTeam from "../assets/images/2024-2025/team.png";
 import IntoTheDeepRobot from "../assets/images/2024-2025/robot.webp";
 import BiobuzzLogo from "../assets/images/logos/biobuzz.webp";
@@ -58,10 +59,14 @@ import FreightFrenzyLogo from "../assets/images/logos/freight-frenzy.webp";
                 logo={DecodeLogo.src}
                 awards={[
                     "Reach Award - 2nd Place",
-                    "Dean's List Semi-Finalist - Tommy Ho",
+                    "Dean's List Semi-Finalist - Tommy H.",
                 ]}
             >
-                <SeasonPage season="2025-2026" href="/seasons/2025-2026" />
+                <SeasonPage
+                    season="2025-2026"
+                    href="/seasons/2025-2026"
+                    teamImage={DecodeTeam.src}
+                />
             </TimelineEntry>
             <TimelineEntry
                 season="2024-2025"

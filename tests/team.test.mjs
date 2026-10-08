@@ -23,6 +23,7 @@ import {
     lastDoneAgo,
     liveSummary,
     niceTop,
+    shortName,
     UNTITLED_TASK,
     weeklyTotal,
 } from "../src/components/team/format.ts";
@@ -68,6 +69,9 @@ const live = (over = {}) => ({
     ...over,
 });
 
+/** Roster entries the way the page hands them to the browser: a key, not the full name. */
+const withKeys = (roster) => roster.map((r) => ({ slug: r.slug, key: normalizeName(r.name) }));
+
 describe("slugify / normalizeName", () => {
     it("lowercases, hyphenates and strips accents", () => {
         assert.equal(slugify("Tommy Ho"), "tommy-ho");
@@ -104,36 +108,41 @@ describe("slugify / normalizeName", () => {
 describe("choosePhoto", () => {
     const files = [
         "/src/assets/images/people/ethan.png",
-        "/src/assets/images/people/tommy-ho.jpg",
-        "/src/assets/images/people/Gwen Lengsfeld.JPG",
-        "/src/assets/images/people/jack-luo.png",
-        "/src/assets/images/people/jack-luo.webp",
+        "/src/assets/images/people/tommy-h.jpg",
+        "/src/assets/images/people/Gwen L.JPG",
+        "/src/assets/images/people/jack-l.png",
+        "/src/assets/images/people/jack-l.webp",
         "/src/assets/images/people/notes.txt",
-        "/src/assets/images/people/jose-nunez.jpeg",
+        "/src/assets/images/people/jose-n.jpeg",
+        "/src/assets/images/people/alice-wang.png",
     ];
 
     it("picks a file named after the person", () => {
         assert.deepEqual(choosePhoto("Tommy Ho", undefined, files), {
             kind: "file",
-            path: "/src/assets/images/people/tommy-ho.jpg",
+            path: "/src/assets/images/people/tommy-h.jpg",
         });
         assert.deepEqual(choosePhoto("José Núñez", undefined, files), {
             kind: "file",
-            path: "/src/assets/images/people/jose-nunez.jpeg",
+            path: "/src/assets/images/people/jose-n.jpeg",
         });
+    });
+
+    it("never matches a file named with the full last name", () => {
+        assert.equal(choosePhoto("Alice Wang", undefined, files), null);
     });
 
     it("slugifies file names too (spaces, capitals, upper-case extension)", () => {
         assert.equal(
             choosePhoto("Gwen Lengsfeld", undefined, files)?.path,
-            "/src/assets/images/people/Gwen Lengsfeld.JPG",
+            "/src/assets/images/people/Gwen L.JPG",
         );
     });
 
     it("prefers webp when one name has several files", () => {
         assert.equal(
             choosePhoto("Jack Luo", undefined, files)?.path,
-            "/src/assets/images/people/jack-luo.webp",
+            "/src/assets/images/people/jack-l.webp",
         );
     });
 
@@ -173,7 +182,7 @@ describe("choosePhoto", () => {
         assert.equal(photoFromImage("missing.png", files), null);
         assert.equal(
             choosePhoto("Tommy Ho", "missing.png", files)?.path,
-            "/src/assets/images/people/tommy-ho.jpg",
+            "/src/assets/images/people/tommy-h.jpg",
         );
         assert.equal(photoForName("", files), null);
     });
@@ -215,12 +224,28 @@ describe("buildRoster", () => {
         const r = buildRoster(sections);
         assert.deepEqual(
             r.map((p) => p.slug),
-            ["tommy-ho", "jack-luo", "tim-jung", "michael-hyodo", "elizabeth-hyodo"],
+            ["tommy-h", "jack-l", "tim-j", "michael-h", "elizabeth-h"],
+        );
+    });
+
+    it("stops when two different names share a short name", () => {
+        assert.throws(
+            () =>
+                buildRoster([
+                    {
+                        title: "",
+                        people: [
+                            { name: "Jack Luo", roles: [] },
+                            { name: "Jack Lee", roles: [] },
+                        ],
+                    },
+                ]),
+            /"Jack Luo" and "Jack Lee" are both shown as "Jack L\."/,
         );
     });
 
     it("merges a name listed twice: both positions, both entries", () => {
-        const tim = buildRoster(sections).find((p) => p.slug === "tim-jung");
+        const tim = buildRoster(sections).find((p) => p.slug === "tim-j");
         assert.deepEqual(tim.roles, ["Build Team", "Software Team"]);
         assert.equal(tim.entries.length, 2);
         assert.equal(tim.entries.find((e) => e.image)?.image, "tim.png");
@@ -301,7 +326,7 @@ describe("badges", () => {
 });
 
 describe("matchLive", () => {
-    const roster = buildRoster([
+    const roster = withKeys(buildRoster([
         {
             title: "",
             people: [
@@ -311,16 +336,16 @@ describe("matchLive", () => {
                 { name: "Alice Wang", roles: [] },
             ],
         },
-    ]);
+    ]));
 
     it("matches full names ignoring case, spaces and accents", () => {
         const m = matchLive(roster, [
             live({ id: "a", name: "tommy  ho" }),
             live({ id: "b", name: "Jose Nunez" }),
         ]);
-        assert.equal(m.get("tommy-ho")?.id, "a");
-        assert.equal(m.get("jose-nunez")?.id, "b");
-        assert.equal(m.has("jack-luo"), false);
+        assert.equal(m.get("tommy-h")?.id, "a");
+        assert.equal(m.get("jose-n")?.id, "b");
+        assert.equal(m.has("jack-l"), false);
     });
 
     it("doesn't match shortened names (portal name style not 'full')", () => {
@@ -337,8 +362,8 @@ describe("matchLive", () => {
             live({ id: "b", name: "alice wang" }),
             live({ id: "c", name: "Jack Luo" }),
         ]);
-        assert.equal(m.has("alice-wang"), false);
-        assert.equal(m.get("jack-luo")?.id, "c");
+        assert.equal(m.has("alice-w"), false);
+        assert.equal(m.get("jack-l")?.id, "c");
     });
 
     it("finds portal-only people by slug (unique only)", () => {
@@ -347,7 +372,8 @@ describe("matchLive", () => {
             live({ id: "b", name: "E.C." }),
             live({ id: "c", name: "E C" }),
         ];
-        assert.equal(liveBySlug("avery-lin", people)?.id, "a");
+        assert.equal(liveBySlug("avery-l", people)?.id, "a");
+        assert.equal(liveBySlug("avery-lin", people), null);
         assert.equal(liveBySlug("e-c", people), null);
         assert.equal(liveBySlug("nobody", people), null);
     });
@@ -379,10 +405,11 @@ describe("deep links", () => {
     });
 
     it("links /progress people to their profile", () => {
-        assert.equal(teamProfileHref("Tommy Ho"), "/about/team?person=tommy-ho");
+        assert.equal(teamProfileHref("Tommy Ho"), "/about/team?person=tommy-h");
+        assert.equal(teamProfileHref("tommy-h"), "/about/team?person=tommy-h");
         assert.equal(
             teamProfileHref("José Núñez", "demo=1"),
-            "/about/team?person=jose-nunez&demo=1",
+            "/about/team?person=jose-n&demo=1",
         );
         assert.equal(teamProfileHref("张伟"), `/about/team?person=${encodeURIComponent("张伟")}`);
         assert.equal(teamProfileHref("!!"), "/about/team");
@@ -501,6 +528,14 @@ describe("parsePersonDetail", () => {
 describe("format", () => {
     const now = Date.parse("2026-10-05T19:00:00.000Z"); // Mon, Oct 5 (LA)
 
+    it("short names: first name plus last initial", () => {
+        assert.equal(shortName("Tommy Ho"), "Tommy H.");
+        assert.equal(shortName("Wolfgang Lengsfeld"), "Wolfgang L.");
+        assert.equal(shortName("  Mary Ann  smith "), "Mary Ann S.");
+        assert.equal(shortName("Daksh"), "Daksh");
+        assert.equal(shortName(""), "");
+    });
+
     it("item counts", () => {
         assert.equal(itemsLabel(0), "0 items");
         assert.equal(itemsLabel(1), "1 item");
@@ -579,9 +614,9 @@ describe("dev demo data (?demo=1)", async () => {
         const demo = createTeamDemo("1", names);
         const team = parseProgress(await demo.fetcher(signal));
         assert.ok(team && team.enabled);
-        const matched = matchLive(roster, team.people);
+        const matched = matchLive(withKeys(roster), team.people);
         assert.ok(matched.size >= roster.length - 2, `${matched.size} matched`);
-        assert.ok(liveBySlug("avery-lin", team.people));
+        assert.ok(liveBySlug("avery-l", team.people));
         // Like the portal: the weeks start at the week `since` falls in (at
         // most 8), and the team's weeks add up to everything done.
         assert.deepEqual(
@@ -717,16 +752,16 @@ describe("profile links (/progress -> Our Team)", () => {
             { id: "b", name: "J.L." },
             { id: "c", name: "J.L." },
             { id: "d", name: "Tim Jung" },
-            { id: "e", name: "Tim-Jung" },
+            { id: "e", name: "Tim Jones" }, // same short name as Tim Jung
             { id: "f", name: "Ethan C." },
             { id: "g", name: "Prince" },
             { id: "h", name: "!!" },
         ]);
         assert.deepEqual([...links], [
-            ["a", "tommy-ho"],
+            ["a", "tommy-h"],
             ["g", "prince"],
         ]);
-        assert.equal(teamProfileHref(links.get("a"), "demo=1"), "/about/team?person=tommy-ho&demo=1");
+        assert.equal(teamProfileHref(links.get("a"), "demo=1"), "/about/team?person=tommy-h&demo=1");
     });
 
     it("links nobody when the portal shows initials (and the team page opens no stray profile)", () => {
@@ -738,16 +773,16 @@ describe("profile links (/progress -> Our Team)", () => {
         assert.equal(profileLinks(people).size, 0);
         assert.equal(liveBySlug("t-h", people), null);
         assert.equal(liveBySlug("ethan-z", people), null);
-        assert.equal(liveBySlug("avery-lin", [live({ id: "x", name: "Avery Lin" })])?.id, "x");
+        assert.equal(liveBySlug("avery-l", [live({ id: "x", name: "Avery Lin" })])?.id, "x");
     });
 });
 
 describe("unused photos", () => {
     const files = [
         "/src/assets/images/people/ethan.png",
-        "/src/assets/images/people/tommy-ho.jpg",
+        "/src/assets/images/people/tommy-h.jpg",
         "/src/assets/images/people/group.webp",
-        "/src/assets/images/people/old-member.png",
+        "/src/assets/images/people/old-m.png",
         "/src/assets/images/people/notes.txt",
     ];
 
@@ -761,7 +796,7 @@ describe("unused photos", () => {
                 ],
                 files,
             ),
-            ["/src/assets/images/people/ethan.png", "/src/assets/images/people/old-member.png"],
+            ["/src/assets/images/people/ethan.png", "/src/assets/images/people/old-m.png"],
         );
     });
 
@@ -772,7 +807,7 @@ describe("unused photos", () => {
                 files,
                 ["/src/assets/images/people/ethan.png"],
             ),
-            ["/src/assets/images/people/tommy-ho.jpg", "/src/assets/images/people/group.webp"],
+            ["/src/assets/images/people/tommy-h.jpg", "/src/assets/images/people/group.webp"],
         );
     });
 });

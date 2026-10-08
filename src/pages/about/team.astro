@@ -42,11 +42,16 @@
  *   4. their initials.
  *
  * Adding a photo here instead: put it in src/assets/images/people/ and name
- * the file after the person: their name in lowercase, spaces -> hyphens,
- * accents removed, apostrophes dropped. .png, .jpg, .jpeg or .webp:
- *     Tommy Ho        -> tommy-ho.jpg
- *     Wolfgang Lengsfeld -> wolfgang-lengsfeld.png
- *     José O'Neil     -> jose-oneil.webp
+ * the file after the person's SHORT name (first name + last initial, as the
+ * page shows it): lowercase, spaces -> hyphens, accents removed, no dot.
+ * .png, .jpg, .jpeg or .webp:
+ *     Tommy Ho        -> tommy-h.jpg
+ *     Wolfgang Lengsfeld -> wolfgang-l.png
+ *     José O'Neil     -> jose-o.webp
+ * Never use the full last name in the file name: the site only shows first
+ * names and last initials (a "tommy-ho.jpg" matches nobody). Write full names
+ * below; the page shortens them. Two people with the same short name stop the
+ * build with a message (add a middle initial to one of them).
  * It's picked up automatically at build time, cropped square from the top
  * and resized (no code change needed). Or set `image` on an entry to use a
  * file with another name from that folder (image: "ethan.png"), a file in
@@ -74,13 +79,14 @@
  * link people here). A profile lists what someone finished only while the
  * portal's "Show each person's profile on the Our Team page" is on (Admin ->
  * Team website); otherwise it shows their numbers. Share a profile with
- * /about/team?person=tommy-ho.
+ * /about/team?person=tommy-h.
  */
 import { PUBLIC_PORTAL_URL } from "astro:env/client";
 import Person from "../../components/Person.astro";
 import type { Badge } from "../../components/team/badges";
 import { resolvePhoto, warnUnusedPhotos } from "../../components/team/photos";
-import { buildRoster, slugify } from "../../components/team/roster";
+import { buildRoster, shortName, slugify } from "../../components/team/roster";
+import { teamPhotoKey } from "../../components/team/name-key";
 import TeamLive from "../../components/team/team-live";
 import Layout from "../../layouts/Layout.astro";
 import "../../styles/progress.css";
@@ -258,9 +264,13 @@ const roster = await Promise.all(
     buildRoster(sections).map(async (person) => {
         const image = person.entries.find((entry) => entry.image)?.image;
         const photo = await resolvePhoto(person.name, image);
+        // No full names in the page: the short name to show, and the key
+        // the portal's photos and live numbers are matched by.
         return {
             slug: person.slug,
-            name: person.name,
+            name: shortName(person.name),
+            key: teamPhotoKey(person.name),
+            devName: import.meta.env.DEV ? person.name : undefined,
             roles: person.roles,
             lead: person.lead,
             badges: person.badges,

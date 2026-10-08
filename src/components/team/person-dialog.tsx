@@ -52,6 +52,7 @@ import {
     joinRoles,
     lastDoneAgo,
     niceTop,
+    shortName,
     weeklyTotal,
 } from "./format";
 import {
@@ -758,7 +759,7 @@ function DialogBody({
                             tabIndex={-1}
                             data-initial-focus
                         >
-                            {view.name}
+                            {shortName(view.name)}
                         </h2>
                         {roles.length > 0 && (
                             <>

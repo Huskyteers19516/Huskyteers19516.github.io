@@ -326,15 +326,23 @@ initials (a photo only while the portal's name style is "full", since it's
 matched by name).
 
 **Photos in the repo (override / fallback).** Drop the photo into
-`src/assets/images/people/` and name it after the person: lowercase, spaces
+`src/assets/images/people/` and name it after the person's **short name** —
+first name plus last initial, the way the page shows it: lowercase, spaces
 become hyphens, accents and apostrophes removed, ending in `.png`, `.jpg`,
 `.jpeg` or `.webp`.
 
-| Name on the page   | Photo file                 |
-| :----------------- | :------------------------- |
-| Tommy Ho           | `tommy-ho.jpg`             |
-| Wolfgang Lengsfeld | `wolfgang-lengsfeld.png`   |
-| José O'Neil        | `jose-oneil.webp`          |
+| Name in `team.astro` | Shown as      | Photo file         |
+| :------------------- | :------------ | :----------------- |
+| Tommy Ho             | Tommy H.      | `tommy-h.jpg`      |
+| Wolfgang Lengsfeld   | Wolfgang L.   | `wolfgang-l.png`   |
+| José O'Neil          | José O.       | `jose-o.webp`      |
+
+The site never shows full last names — not on the cards, in profile links
+(`?person=tommy-h`) or in photo file names — so a file named with the full
+last name (`tommy-ho.jpg`) matches nobody. Keep writing full names in
+`team.astro` (they're how people are matched with the portal); if two people
+end up with the same short name, the build stops and asks you to tell them
+apart (e.g. with a middle initial).
 
 It's found automatically at build time and cropped to a square from the top
 (keep the face in the upper part of the photo), then resized; no code change.
@@ -365,7 +373,7 @@ website); otherwise the cards simply show no live numbers, and `/progress`
 doesn't link people here. A profile lists what someone finished only while
 the portal's "Show each person's profile on the Our Team page" is on (Admin →
 Team website, off until turned on); otherwise it shows their numbers. Link to
-a profile with `/about/team?person=tommy-ho`; the people on `/progress` link
+a profile with `/about/team?person=tommy-h`; the people on `/progress` link
 there. While developing, `npm run dev` and open `/about/team?demo=1` (or
 `/progress?demo=1`) for mock data with generated stand-in photos (also
 `?demo=nodetail` for profiles turned off, `?demo=detailerror` for the

@@ -7,7 +7,7 @@
  * (src/components/team/roster.ts): { name, roles, image?, badges, tone }.
  * The photo is found at build time (src/components/team/photos.ts): `image`
  * if set, else a file in src/assets/images/people/ named after the person
- * ("tommy-ho.jpg"), else their initials. Unless `image` is set, the frame
+ * ("tommy-h.jpg", first name + last initial), else their initials. Unless `image` is set, the frame
  * also gets an empty `data-photo-slot`: the page's island lays the person's
  * own photo from the Teammate Portal over it when they have one (same size,
  * fades in once loaded, nothing moves).
@@ -23,8 +23,8 @@ import { initials } from "./progress/format";
 import BadgeList from "./team/BadgeList.astro";
 import type { BadgeTone, ShownBadge } from "./team/badges";
 import { resolvePhoto } from "./team/photos";
-import { joinRoles } from "./team/format";
-import { isLeadRole, slugify } from "./team/roster";
+import { joinRoles, shortName } from "./team/format";
+import { isLeadRole, personSlug } from "./team/roster";
 
 interface Props {
     name: string;
@@ -39,7 +39,7 @@ interface Props {
 }
 
 const { name, roles = [], image, lead, badges = [], tone = "green" } = Astro.props;
-const slug = slugify(name);
+const slug = personSlug(name);
 const photo = await resolvePhoto(name, image);
 const isLead = lead ?? isLeadRole(roles);
 // An explicit `image` always wins over the portal photo: no slot for it.
@@ -55,7 +55,7 @@ const portalSlot = photo?.source !== "image";
             data-slug={slug}
             aria-haspopup="dialog"
         >
-            {name}
+            {shortName(name)}
         </button>
     </h3>
     <Maximize class="team-card-open size-3.5" aria-hidden="true" />

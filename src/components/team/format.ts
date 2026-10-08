@@ -5,6 +5,8 @@
 import { formatNumber, parseDay, teamToday } from "../progress/format.ts";
 import type { ProgressPerson, ProgressWeek } from "../progress/types";
 
+export { shortName } from "./roster.ts";
+
 /** "Build Team · Software Team" (positions as listed in team.astro). */
 export function joinRoles(roles: readonly string[]): string {
     return roles.filter((r) => r.trim()).join(" · ");
