@@ -5,8 +5,9 @@ import Mail from "@lucide/astro/icons/mail";
 import ArrowUpRight from "@lucide/astro/icons/arrow-up-right";
 import Layout from "../layouts/Layout.astro";
 import TeamImage from "../assets/images/contact/team.jpg";
+import InstagramQrCode from "../assets/images/contact/instagram-qr.png";
 
-const email = "fpahuskyteers19516@gmail.com";
+const email = "diramirez@fairmontschools.com";
 
 const cards = [
     {
@@ -23,7 +24,7 @@ const cards = [
         key: "discord",
         title: "Join our Discord",
         description:
-            "Hang out with the Huskyteers community, ask questions and chat about FTC.",
+            "Join our public general channel to meet the Huskyteers community, ask questions and chat about FTC.",
         href: "https://discord.gg/9a7y4MpE6",
         cta: "Join the server",
         icon: Discord,
@@ -42,7 +43,7 @@ const cards = [
 ];
 ---
 
-<Layout>
+<Layout title="Contact Us | The Huskyteers | FTC 19516">
     <main
         class="flex flex-col items-center pt-8 w-full min-h-screen container mx-auto mb-10 px-4 text-center"
     >
@@ -71,10 +72,10 @@ const cards = [
                         data-edit-label={`Contact: ${title} (link)`}
                         target={external ? "_blank" : undefined}
                         rel={external ? "noopener noreferrer" : undefined}
-                        class="card bg-base-200 border border-base-content/10 transition hover:-translate-y-1 hover:border-primary hover:shadow-lg"
+                        class="card min-w-0 bg-base-200 border border-base-content/10 transition hover:-translate-y-1 hover:border-primary hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
                     >
                         <div class="card-body items-center text-center">
-                            <Icon size={36} class="text-primary" />
+                            <Icon size={36} class="text-primary" aria-hidden="true" />
                             <h2
                                 class="card-title mt-2"
                                 data-edit-text={`contact.${key}.title`}
@@ -83,21 +84,31 @@ const cards = [
                                 {title}
                             </h2>
                             <p
-                                class="text-base-content/75"
+                                class="flex-none text-base-content/75"
                                 data-edit-text={`contact.${key}.text`}
                                 data-edit-label={`Contact: ${title} (text)`}
                                 data-edit-multiline
                             >
                                 {description}
                             </p>
-                            <span class="mt-2 inline-flex items-center gap-1 font-medium text-primary break-all">
+                            {key === "instagram" && (
+                                <Image
+                                    src={InstagramQrCode}
+                                    alt="Scan this QR code to follow the Huskyteers on Instagram"
+                                    format="png"
+                                    class="my-2 w-48 max-w-full h-auto rounded-lg bg-white"
+                                    data-edit-image="contact.instagram.qr-code"
+                                    data-edit-label="Contact: Instagram QR code"
+                                />
+                            )}
+                            <span class="mt-auto pt-2 inline-flex items-center gap-1 font-medium text-primary break-all">
                                 <span
                                     data-edit-text={`contact.${key}.cta`}
                                     data-edit-label={`Contact: ${title} (button text)`}
                                 >
                                     {cta}
                                 </span>
-                                {external && <ArrowUpRight size={16} />}
+                                {external && <ArrowUpRight size={16} class="shrink-0" aria-hidden="true" />}
                             </span>
                         </div>
                     </a>
