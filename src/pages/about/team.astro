@@ -147,6 +147,28 @@ const driveTrain: Badge = {
     title: "Drivetrain Builder",
     description: "Built the robot's drivetrain",
 };
+// portal: "Website - Landing Page", "Website - Contact Page" and
+// "Website - Outreach Events Page" (Oct 13)
+const websitePages: Badge = {
+    icon: "globe",
+    tone: "teal",
+    title: "Web Developer",
+    description: "Built the website's Home, Contact and Events pages",
+};
+// portal: "Testing robot" (Oct 10 to 15)
+const robotTester: Badge = {
+    icon: "gamepad",
+    tone: "teal",
+    title: "Robot Tester",
+    description: "Tested the robot's code on the field",
+};
+// portal: "Test Intake Prototype"
+const intakeTester: Badge = {
+    icon: "wrench",
+    tone: "green",
+    title: "Intake Tester",
+    description: "Tested the intake prototype",
+};
 
 // Badges marked "portal" come from tasks finished in the Teammate Portal;
 // the business team fills in and updates the rest.
@@ -173,8 +195,24 @@ const sections: { title: string; people: PersonData[] }[] = [
                 ],
             },
             { name: "Ethan Zhang", roles: [buildLead] },
-            { name: "Wolfgang Lengsfeld", roles: [buildLead] },
-            { name: "Gwen Lengsfeld", roles: [businessLead] },
+            {
+                name: "Wolfgang Lengsfeld",
+                roles: [buildLead],
+                badges: [intakeTester],
+            },
+            {
+                name: "Gwen Lengsfeld",
+                roles: [businessLead],
+                badges: [
+                    // portal: assigned "Awards poster" and "No AI Poster Poster"
+                    {
+                        icon: "palette",
+                        tone: "gold",
+                        title: "Poster Director",
+                        description: "Runs the business team's poster work",
+                    },
+                ],
+            },
             {
                 name: "Jack Luo",
                 roles: [softwareLead],
@@ -186,33 +224,102 @@ const sections: { title: string; people: PersonData[] }[] = [
                         title: "TeleOp Programmer",
                         description: "Driver-controlled robot code",
                     },
-                    // portal: "Website - The Workshop" (Oct 4)
+                    // portal: "Website - The Workshop" (Oct 4), Landing,
+                    // Contact and Outreach Events pages (Oct 13)
                     {
                         icon: "globe",
                         tone: "teal",
                         title: "Web Developer",
-                        description: "Built the website's Workshop page",
+                        description: "Built the Workshop, Home, Contact and Events pages",
                     },
+                    robotTester,
                 ],
             },
             {
                 name: "Grant Story",
                 roles: [buildLead],
-                badges: [driveTrain],
+                badges: [
+                    driveTrain,
+                    // portal: assigned the side ramps, wood cover, outtake
+                    // blocker, pollen ramp and control hub tasks
+                    {
+                        icon: "package",
+                        tone: "gold",
+                        title: "Build Planner",
+                        description: "Plans and hands out the build tasks",
+                    },
+                ],
             },
         ],
     },
     {
         title: "Members",
         people: [
-            { name: "Maximus Ku", roles: [buildTeam] },
+            {
+                name: "Maximus Ku",
+                roles: [buildTeam],
+                badges: [
+                    // portal: "Outtake Blocker" (Oct 13)
+                    {
+                        icon: "cog",
+                        tone: "green",
+                        title: "Mechanism Builder",
+                        description: "Built the outtake blocker",
+                    },
+                    // portal: "Compartmentalized Drive Plates"
+                    {
+                        icon: "wrench",
+                        tone: "green",
+                        title: "Drive Plate Maker",
+                        description: "Compartmentalized drive plates",
+                    },
+                ],
+            },
             { name: "Tim Jung", roles: [buildTeam] },
-            { name: "Michael Hyodo", roles: [softwareTeam], badges: [parkingAuto] },
+            {
+                name: "Michael Hyodo",
+                roles: [softwareTeam],
+                badges: [
+                    parkingAuto,
+                    // portal: "Auto Design" (Oct 15), red alliance
+                    {
+                        icon: "route",
+                        tone: "teal",
+                        title: "Auto Designer",
+                        description: "Red alliance parking autonomous",
+                    },
+                    robotTester,
+                ],
+            },
             { name: "Tim Jung", roles: [softwareTeam], badges: [parkingAuto] },
             { name: "Elizabeth Hyodo", roles: [businessTeam] },
-            { name: "Viraaj Gaggar", roles: [businessTeam] },
+            {
+                name: "Viraaj Gaggar",
+                roles: [businessTeam],
+                badges: [
+                    // portal: "Awards poster" (Oct 12), "No AI Poster Poster" (Oct 13)
+                    {
+                        icon: "palette",
+                        tone: "violet",
+                        title: "Poster Designer",
+                        description: "Awards poster and No AI poster",
+                    },
+                ],
+            },
             { name: "Alivia Hsu", roles: [businessTeam] },
-            { name: "Jason Luo", roles: [businessTeam] },
+            {
+                name: "Jason Luo",
+                roles: [businessTeam],
+                badges: [
+                    // portal: "Budget Update" (Oct 10)
+                    {
+                        icon: "notebook",
+                        tone: "violet",
+                        title: "Budget Keeper",
+                        description: "Keeps the team budget up to date",
+                    },
+                ],
+            },
             {
                 name: "Tiffany Yang",
                 roles: [businessTeam],
@@ -226,20 +333,119 @@ const sections: { title: string; people: PersonData[] }[] = [
                     },
                 ],
             },
-            { name: "Felix Gu", roles: [softwareTeam] },
-            { name: "Jack Hu", roles: [softwareTeam], badges: [parkingAuto] },
+            {
+                // In the portal's Build subteam; his tasks are build/CAD ones.
+                name: "Felix Gu",
+                roles: [buildTeam],
+                badges: [
+                    // portal: "Finish OnShape Lessons"
+                    {
+                        icon: "compass",
+                        tone: "green",
+                        title: "CAD Trainee",
+                        description: "Finished the Onshape CAD lessons",
+                    },
+                ],
+            },
+            {
+                name: "Jack Hu",
+                roles: [softwareTeam],
+                badges: [
+                    parkingAuto,
+                    // portal: "Costume Bot" (Oct 13)
+                    {
+                        icon: "gamepad",
+                        tone: "teal",
+                        title: "Costume Bot Coder",
+                        description: "TeleOp for the Halloween costume bot",
+                    },
+                    robotTester,
+                ],
+            },
             { name: "Brandon Shu", roles: [softwareTeam], badges: [parkingAuto] },
             { name: "Alice Wang", roles: [softwareTeam], badges: [parkingAuto] },
-            { name: "Frank Wang", roles: [softwareTeam], badges: [parkingAuto] },
-            { name: "Stephen Yuan", roles: [softwareTeam], badges: [parkingAuto] },
-            { name: "Paige Bantz", roles: [buildTeam], badges: [driveTrain] },
+            {
+                name: "Frank Wang",
+                roles: [softwareTeam],
+                badges: [parkingAuto, websitePages],
+            },
+            {
+                name: "Stephen Yuan",
+                roles: [softwareTeam],
+                badges: [parkingAuto, websitePages],
+            },
+            {
+                name: "Paige Bantz",
+                roles: [buildTeam],
+                badges: [
+                    driveTrain,
+                    // portal: "Attach control hubs"
+                    {
+                        icon: "cpu",
+                        tone: "green",
+                        title: "Electronics Installer",
+                        description: "Mounted the control hubs",
+                    },
+                ],
+            },
             { name: "Daksh Bhatnagar", roles: [buildTeam] },
-            { name: "Jaylen Hon", roles: [buildTeam] },
+            {
+                name: "Jaylen Hon",
+                roles: [buildTeam],
+                badges: [
+                    // portal: "Side ramps" (Oct 13)
+                    {
+                        icon: "wrench",
+                        tone: "green",
+                        title: "Ramp Builder",
+                        description: "Built the side ramps",
+                    },
+                    intakeTester,
+                ],
+            },
             { name: "Will Li", roles: [buildTeam] },
-            { name: "William Man", roles: [buildTeam] },
-            { name: "Ian Nguyen", roles: [buildTeam] },
-            { name: "Aden Nunes", roles: [buildTeam] },
-            { name: "Aaron Sun", roles: [buildTeam] },
+            {
+                name: "William Man",
+                roles: [buildTeam],
+                badges: [
+                    // portal: "Finish Intake Prototype CAD" (Oct 15)
+                    {
+                        icon: "compass",
+                        tone: "green",
+                        title: "CAD Designer",
+                        description: "CAD for the intake prototype",
+                    },
+                ],
+            },
+            {
+                // "Hien Nguyen" in the portal.
+                name: "Ian Nguyen",
+                roles: [buildTeam],
+                badges: [
+                    // portal: "Wood cover" (Oct 13)
+                    {
+                        icon: "wrench",
+                        tone: "green",
+                        title: "Cover Builder",
+                        description: "Built the robot's wood cover",
+                    },
+                    intakeTester,
+                ],
+            },
+            {
+                name: "Aden Nunes",
+                roles: [buildTeam],
+                badges: [
+                    // portal: "Flower Pollen Collection Ramp" (Oct 10)
+                    {
+                        icon: "cog",
+                        tone: "green",
+                        title: "Ramp Builder",
+                        description: "Built the flower pollen collection ramp",
+                    },
+                ],
+            },
+            { name: "Aaron Sun", roles: [buildTeam], badges: [intakeTester] },
         ],
     },
 ];
