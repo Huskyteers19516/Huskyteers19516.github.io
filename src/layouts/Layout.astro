@@ -1,7 +1,9 @@
 ---
+import { getImage } from "astro:assets";
 import Footer from "../components/Footer.astro";
 import Header from "../components/header/Header.astro";
 import SiteContent from "../components/site-content/SiteContent.astro";
+import ShareImage from "../assets/images/2025-2026/team.jpg";
 import "../styles/global.css";
 import Font from "astro/components/Font.astro";
 
@@ -12,8 +14,17 @@ interface Props {
 
 const {
     title = "The Huskyteers | FTC 19516",
-    description = "The Huskyteers are a FIRST Tech Challenge team based in the Anaheim, California.",
+    description = "The Huskyteers are a FIRST Tech Challenge team based in Anaheim, California.",
 } = Astro.props;
+
+// Link previews (Discord, iMessage, Instagram DMs) need absolute URLs. The
+// deploy workflows pass --site; a plain local build falls back to the live
+// domain. GitHub Pages reports the domain as http://, so switch it to https.
+const site = new URL(Astro.site ?? "https://www.huskyteers19516.com");
+site.protocol = "https:";
+const pageUrl = new URL(Astro.url.pathname, site);
+const shareImage = await getImage({ src: ShareImage, width: 1200, format: "jpg" });
+const shareImageUrl = new URL(shareImage.src, site);
 ---
 
 <!doctype html>
@@ -27,6 +38,16 @@ const {
         <title>{title}</title>
         <meta name="title" content={title} />
         <meta name="description" content={description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="The Huskyteers | FTC 19516" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:image" content={shareImageUrl} />
+        <meta property="og:image:width" content={String(shareImage.attributes.width)} />
+        <meta property="og:image:height" content={String(shareImage.attributes.height)} />
+        <meta property="og:image:alt" content="The Huskyteers 19516 team at an FTC competition" />
+        <meta name="twitter:card" content="summary_large_image" />
         <Font cssVariable="--font-jockey-one-astro" />
         <Font cssVariable="--font-inter-astro" />
         <Font cssVariable="--font-geist-mono-astro" />
